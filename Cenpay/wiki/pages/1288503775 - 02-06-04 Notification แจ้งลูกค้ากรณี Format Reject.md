@@ -1,0 +1,45 @@
+# 02-06-04 Notification แจ้งลูกค้ากรณี Format Reject
+
+- **Page ID:** 1288503775
+- **URL:** http://wiki.thaisamut.co.th/pages/viewpage.action?pageId=1288503775
+- **Path:** Home > Functional Specification > 02. Process Specification. > Centralized Payment > 02-02-02 กระบวนการส่ง Line/SMS Notification > 02-06-04 Notification แจ้งลูกค้ากรณี Format Reject
+- **Depth:** 5
+
+---
+
+1. ตรวจสอบรายการที่ต้องส่งข้อความแจ้งลูกค้ากรณี Format Reject
+ตรวจสอบสถานะการจ่ายเป็น Format ไม่ผ่าน [tx_payment](/display/RDSCPENH/tx_payment).payment_status_code = 'ICF'
+2.ดึงข้อความจาก [cf_notification](/display/RDSCPENH/cf_notification).sms_message และ [cf_notification](/display/RDSCPENH/cf_notification).line_message ด้วยเงื่อนไข [cf_notification](/display/RDSCPENH/cf_notification).noti_code = 'CP_FORMAT_REJECT
+และประกอบข้อความกับ variable ดังนี้
+
+| variable | description | mapping data |
+|---|---|---|
+| $(var1) | รายการธุรกรรมครบกำหนดสัญญาทรงชีพสมนาคุณจ่ายคืนทันทีจ่ายเวนคืนกรมธรรม์ | [cf_list_of_value](http://wiki.thaisamut.co.th/display/RDSCP/Table+%3A+cf_list_of_value).descriptionwhere [cf_list_of_value](http://wiki.thaisamut.co.th/display/RDSCP/Table+%3A+cf_list_of_value).value = [tx_payment](/display/RDSCPENH/tx_payment).payment_typeand [cf_list_of_value](http://wiki.thaisamut.co.th/display/RDSCP/Table+%3A+cf_list_of_value).group = 'CPH_PAYMENT_TYPE**'** |
+| $(var2) | เลขกรมธรรม์ | [tx_payment_policy](/display/RDSCPENH/tx_payment_policy).policy_nowhere [tx_payment_policy](/display/RDSCPENH/tx_payment_policy).payment_id = [tx_payment](/display/RDSCPENH/tx_payment).idMasking โดยอ้างอิงเงื่อนไขข้อ 5 เลขกรมธรรม์ ใน [IT Development Common Validation](/display/RnD/IT+Development+Common+Validation) ปรับการ Marking ออกตาม RM : [https://redmine.ochi.link/issues/60258](https://redmine.ochi.link/issues/60258) |
+| $(var3) | จำนวนเงิน | [tx_payment](/display/RDSCPENH/tx_payment).total_net_amount |
+| $(var4) | ชื่อธนาคาร | กรณีที่ [tx_payment](/display/RDSCPENH/tx_payment).transfer_type in ('B','E')ใช้ [tx_payment](/display/RDSCPENH/tx_payment).bank_acc_issuerกรณีที่ [tx_payment](/display/RDSCPENH/tx_payment).transfer_type in ('P')ใช้ "ผ่านพร้อมเพย์" |
+| $(var5) | เลขบัญชีธนาคาร | [tx_payment](/display/RDSCPENH/tx_payment).bank_acc_noMasking โดยอ้างอิงเงื่อนไขข้อ 5 เลขที่บัญชีธนาคาร (แจ้งลูกค้า) ใน [IT Development Common Validation](/display/RnD/IT+Development+Common+Validation) |
+
+---
+
+## Hyperlinks บนหน้านี้
+
+- [tx_payment](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment)
+- [cf_notification](http://wiki.thaisamut.co.th/display/RDSCPENH/cf_notification)
+- [cf_notification](http://wiki.thaisamut.co.th/display/RDSCPENH/cf_notification)
+- [cf_notification](http://wiki.thaisamut.co.th/display/RDSCPENH/cf_notification)
+- [cf_list_of_value](http://wiki.thaisamut.co.th/display/RDSCP/Table+%3A+cf_list_of_value)
+- [cf_list_of_value](http://wiki.thaisamut.co.th/display/RDSCP/Table+%3A+cf_list_of_value)
+- [tx_payment](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment)
+- [cf_list_of_value](http://wiki.thaisamut.co.th/display/RDSCP/Table+%3A+cf_list_of_value)
+- [tx_payment_policy](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment_policy)
+- [tx_payment_policy](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment_policy)
+- [tx_payment](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment)
+- [IT Development Common Validation](http://wiki.thaisamut.co.th/display/RnD/IT+Development+Common+Validation)
+- [https://redmine.ochi.link/issues/60258](https://redmine.ochi.link/issues/60258)
+- [tx_payment](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment)
+- [tx_payment](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment)
+- [tx_payment](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment)
+- [tx_payment](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment)
+- [tx_payment](http://wiki.thaisamut.co.th/display/RDSCPENH/tx_payment)
+- [IT Development Common Validation](http://wiki.thaisamut.co.th/display/RnD/IT+Development+Common+Validation)

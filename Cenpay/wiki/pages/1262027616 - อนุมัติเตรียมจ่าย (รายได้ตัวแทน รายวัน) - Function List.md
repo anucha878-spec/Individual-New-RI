@@ -1,0 +1,10 @@
+# อนุมัติเตรียมจ่าย (รายได้ตัวแทน รายวัน) : Function List
+
+- **Page ID:** 1262027616
+- **URL:** http://wiki.thaisamut.co.th/pages/viewpage.action?pageId=1262027616
+- **Path:** Home > Software Requirements Specification > 03. Business Processes and Screens Design > 1. Module: ตรวจสอบ/อนุมัติ เตรียมจ่ายรายได้ตัวแทน (ไม่พัฒนาใน Ph1) > Menu:อนุมัติเตรียมจ่าย (รายได้ตัวแทน รายวัน) > อนุมัติเตรียมจ่าย (รายได้ตัวแทน รายวัน) : Function List
+- **Depth:** 5
+
+---
+
+_(หน้าว่าง - ไม่มีเนื้อหา)_

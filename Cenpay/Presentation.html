@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เตรียมข้อมูล Individual New RI → Cenpay (UAT)</title>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#16212e; --line:#26374a; --ink:#e8eef5; --muted:#9db0c4;
+    --accent:#4da3ff; --accent2:#37d39b; --warn:#ffb648; --danger:#ff6b6b; --chip:#1f2f41;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Leelawadee UI","Segoe UI",Tahoma,"Noto Sans Thai",sans-serif;
+    font-size:16px; line-height:1.6;
+  }
+  #deck{height:100vh;display:flex;flex-direction:column}
+  .slide{
+    display:none; flex:1; overflow:auto;
+    padding:38px 54px 90px;
+    animation:fade .18s ease-out;
+  }
+  .slide.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  h1{font-size:38px;line-height:1.25;margin:0 0 6px}
+  h2{font-size:27px;margin:0 0 4px;color:#fff}
+  h3{font-size:19px;margin:22px 0 8px;color:var(--accent)}
+  p{margin:8px 0}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 22px}
+  .lead{font-size:18px;color:#cfe0f0}
+
+  .kicker{
+    display:inline-block;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);border:1px solid var(--line);border-radius:999px;
+    padding:4px 13px;margin-bottom:14px;background:var(--chip)
+  }
+  code,.mono{font-family:Consolas,"Cascadia Mono",monospace;font-size:.93em}
+  code{background:#1d2b3a;color:#9fd0ff;padding:1px 6px;border-radius:5px;border:1px solid #24384d}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0 6px;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+  th{background:#1b2836;color:#cfe0f0;font-weight:600;white-space:nowrap}
+  tr:nth-child(even) td{background:#141f2b}
+  .wrap{overflow-x:auto}
+
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:900px){.g2,.g3{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card h4{margin:0 0 8px;font-size:16px;color:#fff}
+  .card.acc{border-left:4px solid var(--accent)}
+  .card.ok{border-left:4px solid var(--accent2)}
+  .card.warn{border-left:4px solid var(--warn)}
+  .card.dgr{border-left:4px solid var(--danger)}
+
+  .tag{display:inline-block;padding:2px 9px;border-radius:6px;font-size:12.5px;font-weight:600;white-space:nowrap}
+  .req{background:#4a1f24;color:#ff9b9b;border:1px solid #6d2d34}
+  .opt{background:#213244;color:#9db0c4;border:1px solid #2c435a}
+  .cond{background:#4a3c1c;color:#ffcf80;border:1px solid #6b552a}
+
+  ul,ol{margin:8px 0 8px 22px;padding:0}
+  li{margin:5px 0}
+  .chk li{list-style:none;position:relative;padding-left:26px}
+  .chk li:before{content:"\2610";position:absolute;left:0;color:var(--accent);font-size:17px}
+
+  pre{
+    background:#0c141d;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;overflow:auto;font-size:13px;line-height:1.55;
+    font-family:Consolas,"Cascadia Mono",monospace;color:#bcd6ef
+  }
+  pre .k{color:#7fd3ff}pre .s{color:#a8e6b0}pre .n{color:#ffcf80}pre .c{color:#6f8399}
+
+  .flow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin:16px 0}
+  .step{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .step b{display:block;color:var(--accent);font-size:12.5px;letter-spacing:.08em;margin-bottom:4px}
+  .arrow{align-self:center;color:var(--muted);font-size:22px}
+
+  .big{font-size:30px;font-weight:700;color:#fff}
+  .note{color:var(--muted);font-size:14px}
+  .hl{color:var(--warn);font-weight:600}
+    a{color:var(--accent)}
+    .tag.new{background:#123a2c;color:#7ff0c0;border:1px solid #1e6b4f}
+    .tag.fix{background:#3a2412;color:#ffc98a;border:1px solid #6b4a1e}
+
+  nav{
+    position:fixed;left:0;right:0;bottom:0;height:58px;
+    display:flex;align-items:center;gap:14px;padding:0 22px;
+    background:rgba(15,23,32,.94);border-top:1px solid var(--line);backdrop-filter:blur(6px)
+  }
+  nav button{
+    background:var(--chip);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:7px 15px;font-size:14px;cursor:pointer;font-family:inherit
+  }
+  nav button:hover{border-color:var(--accent);color:#fff}
+  #bar{flex:1;height:4px;background:#1d2b3a;border-radius:99px;overflow:hidden}
+  #fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}
+  #count{color:var(--muted);font-size:14px;min-width:74px;text-align:right}
+  #title{color:var(--muted);font-size:14px;max-width:38vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  @media print{
+    nav{display:none}
+    .slide{display:block!important;page-break-after:always;height:auto;padding:24px}
+    body{background:#fff;color:#111}
+    .card,pre,th,td{background:#fff!important;border-color:#bbb!important;color:#111!important}
+    h1,h2,.card h4{color:#000}
+  }
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- 1 -->
+<section class="slide" data-title="ปก">
+  <span class="kicker">UAT · Cenpay Enhancement (CENPAY_ENH)</span>
+  <h1>เตรียมข้อมูลจากระบบ <span style="color:var(--accent)">Individual New RI</span><br>เพื่อทดสอบระบบ Cenpay</h1>
+  <p class="lead">คู่มือสำหรับทีม QA / ผู้เตรียมข้อมูลทดสอบฝั่งระบบต้นทาง</p>
+  <div class="grid g3" style="margin-top:30px">
+    <div class="card acc"><h4>RI คืออะไรในสายตา Cenpay</h4><p class="note">ประกันภัยต่อ (ReInsurance) — กลุ่มธุรกรรม <code>EI</code> รายการ <code>RIP</code></p></div>
+    <div class="card ok"><h4>ต้องส่งข้อมูลยังไง</h4><p class="note">ยิง REST API เข้า Cenpay 1 เส้น: <code>02 WS Landing</code></p></div>
+    <div class="card warn"><h4>เตรียมอะไรบ้าง</h4><p class="note">Header + Detail + เอกสาร + Master data + ชุดเคสทดสอบ</p></div>
+  </div>
+  <p class="note" style="margin-top:34px"><b>ปรับปรุงข้อมูล 19 ส.ค. 2026</b> จาก Redmine #93943 / #93953 / #93955 / #93290 + wiki <code>RDSADW</code> (EDW-RI-SD005, SD007)<br>
+  อ้างอิง: Confluence space <code>RDSCPENH</code> — Functional Specification &gt; 07. Exposed API Specification<br>
+  กด <b>&rarr;</b> / <b>Space</b> เพื่อไปสไลด์ถัดไป · <b>P</b> เพื่อพิมพ์หรือบันทึกเป็น PDF</p>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-title="ภาพรวม 1 นาที">
+  <span class="kicker">ภาพรวม</span>
+  <h2>สรุปใน 1 นาที</h2>
+  <p class="sub">ระบบ RI ทำหน้าที่ “ส่งรายการที่อนุมัติจ่ายแล้ว” เข้ามาให้ Cenpay ทำจ่ายจริง แล้วดึงสถานะกลับไปอัปเดต</p>
+
+  <div class="flow">
+    <div class="step"><b>1 · RI (Manual RI)</b>Offset ข้อมูล Actual แล้วอนุมัติที่หน้าจอ <code>EDW-RI-SD005</code> &rarr; <code>SD007/SD008</code> (repo <code>msa-adwetl</code>)</div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>2 · RI &rarr; Cenpay</b>เฉพาะ<b>ขาจ่าย</b> (<code>net_amount &lt; 0</code>) ยิง <code>02 WS Landing</code> พร้อม Generate <code>batch_oper_no</code> ใหม่ทุกครั้ง</div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>3 · Cenpay</b>ตรวจ / อนุมัติ / Split Batch / ทำจ่ายผ่านธนาคาร</div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>4 · RI &larr; Cenpay</b>RI เรียก <code>01 WS payment-verification</code> ดึงสถานะกลับ</div>
+  </div>
+
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card acc">
+      <h4>สิ่งที่ QA ฝั่ง RI ต้องส่งมอบ</h4>
+      <ol>
+        <li>ชุดข้อมูลทดสอบ (Batch + รายการจ่าย) ตาม field ที่กำหนด</li>
+        <li>เอกสารแนบที่มีอยู่จริงในระบบ DMS</li>
+        <li>ตาราง “รายการทดสอบ ↔ ผลลัพธ์ที่คาดหวัง”</li>
+        <li>User ที่ใช้อนุมัติฝั่ง RI (ต้องเป็น user จริง)</li>
+      </ol>
+    </div>
+    <div class="card warn">
+      <h4>สิ่งที่มักตกหล่นจนเทสไม่ผ่าน</h4>
+      <ul>
+        <li>ยอดรวม Header ไม่ตรงกับผลรวม Detail</li>
+        <li>ช่องทางเป็น “โอน” แต่ไม่ส่งข้อมูลธนาคารครบ</li>
+        <li><code>dmsDocId</code> เป็นเลขสมมติ ไม่มีไฟล์จริง</li>
+        <li>ไม่มีเคสยอดเกิน 2 ล้าน → ไม่ได้ทดสอบ Batch Split</li>
+        <li>ฝั่ง RI ยังไม่มีตัวดึงสถานะกลับ → ทดสอบได้ครึ่งทาง</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- 2b -->
+<section class="slide" data-title="เส้นทางจริงฝั่ง RI">
+  <span class="kicker">อัปเดต · 19 ส.ค. 2026</span>
+  <h2>เส้นทางจริงของข้อมูล RI ก่อนถึง Cenpay</h2>
+  <p class="sub">ฝั่งที่คุยกับ Cenpay/PayM คือ <b>Manual RI ผ่านหน้าจอ EDW-RI</b> ใน repo <code>msa-adwetl</code> — ไม่ใช่ core RI ยิงตรง</p>
+
+  <div class="flow">
+    <div class="step"><b>EDW-RI-SD005</b>ตรวจสอบ + <b>Offset</b> ข้อมูล Actual RI &rarr; สถานะ “รอพิจารณาอนุมัติเข้า EDW”<br><span class="note">เขียน <code>tx_ri_actual_offset</code></span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>EDW-RI-SD007 / SD008</b>พิจารณาอนุมัติข้อมูลเข้า EDW<br><span class="note">จุดนี้คือจุดที่ Generate เลขอ้างอิง + ส่งเข้า PayM</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>PayM (msa-paymentmg)</b>ได้ <code>tx_payment_detail.oper_ref_no</code> = เลขอ้างอิงของรอบล่าสุด</div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>ดึงสถานะกลับ</b><code>SyncPayRiBatchService</code> อ่านเลขจาก <code>tx_ri_actual_offset.batch_oper_no</code></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card dgr">
+      <h4>กติกาที่ต้องจำให้ได้ 3 ข้อ</h4>
+      <ol>
+        <li><b>เฉพาะขาจ่ายที่ไปถึง PayM</b> — <code>net_amount &lt; 0</code> เท่านั้น · ขารับ (<code>net_amount &gt; 0</code>) ไม่ส่ง PayM จึงไม่มีเลขอ้างอิงโดยดีไซน์</li>
+        <li><b>Generate เลขใหม่ทุกครั้งที่ส่งเข้า PayM</b> และ<b>ทับเลขเดิม</b> — ส่งใหม่ = PayM ทิ้งรายการเก่า (ยืนยันโดยเจ้าของงาน 14/08/2026)</li>
+        <li><b>แหล่งความจริงเดียวคือ <code>tx_ri_actual_offset.batch_oper_no</code></b> — <code>tx_ri_offset_transaction</code> ของแถวขาจ่ายมี <b>0 แถว</b> (ตารางนั้นเกิดจากไฟล์ขา EDW เท่านั้น)</li>
+      </ol>
+    </div>
+    <div class="card warn">
+      <h4>สถานะฝ่ายการเงิน (<code>tx_ri_actual_offset.process_status_paym</code>)</h4>
+      <p>กด/ส่งซ้ำได้เมื่อสถานะเป็น <b>ค่าว่าง</b> หรืออยู่ในชุด <code>12 / 15 / 18</code> ซึ่ง spec ระบุชื่อไว้ว่า</p>
+      <ul>
+        <li>ส่งข้อมูลเข้าระบบ PayM ไม่สำเร็จ</li>
+        <li>ไม่ผ่านการตรวจสอบ (ฝ่ายการเงิน)</li>
+        <li>จ่ายเงินไม่สำเร็จ</li>
+        <li><span class="hl">ระงับการจ่าย</span> — เพิ่มใน spec 19/08/2026</li>
+      </ul>
+      <p><code>13</code> = กำลังทำจ่าย (อยู่ในชุดที่ระบบ poll สถานะ) &rarr; ปุ่ม disable กันจ่ายซ้ำ</p>
+      <p class="note"><span class="hl">ต้องเช็ค:</span> โค้ดปัจจุบันมีแค่ 3 id (12/15/18) แต่ spec ลิสต์ชื่อไว้ 4 อัน — ถ้า “ระงับการจ่าย” เป็น id ใหม่ ต้องเพิ่มเข้า <code>SELECTABLE_FOR_FINANCE_IDS</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-title="รหัสที่ต้องใช้">
+  <span class="kicker">รหัสประจำระบบ</span>
+  <h2>RI ใช้รหัสอะไรใน Cenpay</h2>
+  <p class="sub">ค่าเหล่านี้ต้องส่งให้ถูกเป๊ะ ไม่งั้น Cenpay จะไม่รู้จักรายการ</p>
+  <div class="wrap">
+  <table>
+    <tr><th>สิ่งที่ต้องระบุ</th><th>ค่าที่ต้องใช้</th><th>ความหมาย</th><th>อ้างอิง</th></tr>
+    <tr><td>Source System</td><td><code>Re Insurance</code></td><td>ระบบต้นทาง</td><td>API ระบบ Payment Management</td></tr>
+    <tr><td>transactionGroup</td><td><code>EI</code></td><td>ประกันภัยต่อ / ReInsurance</td><td>cf_lookup_catalog id 13008</td></tr>
+    <tr><td>transactionType</td><td><code>RIP</code></td><td>จ่ายประกันภัยต่อ</td><td>cf_lookup_catalog id 14030</td></tr>
+    <tr><td>Mapping กลุ่ม ↔ รายการ</td><td><code>EI</code> ↔ <code>RIP</code></td><td>ต้องมีคู่นี้ในระบบ</td><td>cf_lookup_catalog id 72069</td></tr>
+    <tr><td>เลขอ้างอิงที่ส่งเข้า PayM</td><td><code>RI-TB-{YYYYMMDD}-{00001}</code></td><td>เก็บที่ <code>tx_ri_actual_offset.batch_oper_no</code> · ส่งเป็น <code>operRefNo</code></td><td>EDW-RI-SD007 (14/08/2026) · Redmine #93290</td></tr>
+    <tr><td>source_type (เอกสารแนบ)</td><td><code>RI</code></td><td>Cenpay บันทึกที่ tx_document</td><td>02 WS Landing &rarr; Process ข้อ 3</td></tr>
+    <tr><td>API ที่ใช้ส่งเข้า</td><td class="mono">POST /thaisamut/rs/paymentmg/v2/payment-batch/landing</td><td>02 WS Landing (repo <code>msa-paymentmg</code>)</td><td>Exposed API Spec</td></tr>
+    <tr><td>API ที่ใช้ดึงสถานะกลับ</td><td class="mono">POST /thaisamut/rs/paymentmg/v2/payment-verification</td><td>01 WS ตรวจสอบสถานะ (สูงสุด 300 รายการ/ครั้ง)</td><td>Exposed API Spec</td></tr>
+  </table>
+  </div>
+  <div class="card acc" style="margin-top:14px">
+    <h4>ช่องทางการจ่าย (paymentChannel) ที่เลือกได้</h4>
+    <p><code>TRB</code> โอนปกติ · <code>TRE</code> โอนด่วน · <code>PMP</code> พร้อมเพย์ · <code>BKC</code> เช็คธนาคาร · <code>COM</code> เช็คบริษัท · <code>API</code> รหัสรับเงิน · <code>OVR</code> โอนต่างประเทศ · <code>BHT</code> Bahtnet · <code>OTH</code> อื่น ๆ</p>
+    <p class="note"><span class="hl">สำหรับ RI โดยเฉพาะ:</span> ถ้ามีการจ่ายให้ reinsurer ต่างประเทศ ต้องเตรียมเคส <code>OVR</code> และ/หรือ <code>BHT</code> ด้วย</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-title="ข้อมูลระดับ Batch">
+  <span class="kicker">ชุดข้อมูลที่ 1</span>
+  <h2>ข้อมูลระดับ Batch (Header)</h2>
+  <p class="sub">1 Batch = 1 ชุดการอนุมัติจ่ายจากฝั่ง RI · ภายในมีได้หลายรายการ</p>
+  <div class="wrap">
+  <table>
+    <tr><th>Field</th><th>บังคับ</th><th>ต้องเตรียมอย่างไร</th><th>ตัวอย่าง</th></tr>
+    <tr><td><code>batchOperNo</code></td><td><span class="tag req">บังคับ</span></td><td><span class="tag new">ยืนยันแล้ว</span> pattern ของ RI = <code>RI</code>-<code>TB</code>-<code>YYYYMMDD</code>-running 5 หลัก · running key <code>H_RI_TB/YYYYMMDD</code> ที่ <code>tx_running_no</code> · ห้ามซ้ำ (ซ้ำ = 409)<br><span class="note">ระวัง: ฝั่ง RI เก็บเลขนี้ในคอลัมน์ชื่อ <code>batch_oper_no</code> แต่<b>ส่งเข้า PayM เป็น <code>operRefNo</code></b> (ระดับรายการ) ไม่ใช่ <code>batchOperNo</code></span></td><td class="mono">RI-TB-20260818-00001</td></tr>
+    <tr><td><code>transactionGroup</code></td><td><span class="tag req">บังคับ</span></td><td>คงที่</td><td class="mono">EI</td></tr>
+    <tr><td><code>transactionType</code></td><td><span class="tag req">บังคับ</span></td><td>คงที่</td><td class="mono">RIP</td></tr>
+    <tr><td><code>paymentChannel</code></td><td><span class="tag req">บังคับ</span></td><td>ช่องทางจ่ายของทั้ง Batch</td><td class="mono">TRB</td></tr>
+    <tr><td><code>accReferenceNo</code></td><td><span class="tag cond">มีเงื่อนไข</span></td><td>เลขอ้างอิงฝ่ายบัญชี ต้องตรงกับที่บันทึกบัญชี/EDW</td><td class="mono">EI256808170001</td></tr>
+    <tr><td><code>totalTransaction</code></td><td><span class="tag req">บังคับ</span></td><td>จำนวนรายการ — <b>ต้องเท่ากับจำนวน Detail จริง</b></td><td class="mono">3</td></tr>
+    <tr><td><code>totalAmount</code></td><td><span class="tag req">บังคับ</span></td><td>ยอดรวม — <b>ต้องเท่ากับผลรวม amount ของ Detail</b></td><td class="mono">3000000.00</td></tr>
+    <tr><td><code>approvedBy</code></td><td><span class="tag req">บังคับ</span></td><td>username ผู้อนุมัติฝั่ง RI (ต้องเป็น user จริง)</td><td class="mono">somchai.pi</td></tr>
+    <tr><td><code>approvedDate</code></td><td><span class="tag req">บังคับ</span></td><td>วันเวลาที่อนุมัติ</td><td class="mono">2026-08-17T10:30:00Z</td></tr>
+    <tr><td><code>requestPaymentDate</code></td><td><span class="tag opt">ไม่บังคับ</span></td><td>วันที่ขอจ่าย</td><td class="mono">2026-08-17</td></tr>
+    <tr><td><code>tax</code></td><td><span class="tag opt">ไม่บังคับ</span></td><td>ประเภทการจ่ายภาษี เช่น WHT</td><td class="mono">WHT</td></tr>
+    <tr><td><code>previousTransactionType</code><br><code>previousbatchOperNo</code></td><td><span class="tag cond">มีเงื่อนไข</span></td><td>ใส่เฉพาะเคส <b>เช็คคืน–จ่ายใหม่</b> เพื่ออ้างรายการเดิม</td><td class="mono">RIP / RI-TB-20260817-00001</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-title="ข้อมูลระดับรายการ">
+  <span class="kicker">ชุดข้อมูลที่ 2</span>
+  <h2>ข้อมูลระดับรายการจ่าย (PaymentDetail)</h2>
+  <p class="sub">ส่งเป็น List ภายใน Batch — แบ่งเป็น 5 กลุ่มข้อมูล</p>
+  <div class="grid g2">
+    <div class="card acc">
+      <h4>1 · ข้อมูลรายการ &amp; ผู้รับเงิน</h4>
+      <p><code>operRefNo</code> <span class="tag req">บังคับ</span> รหัสอ้างอิงรายการ (ใช้เป็นกุญแจดึงสถานะกลับ)<br>
+      <code>transactionGroup</code> <code>transactionType</code> <code>paymentChannel</code> <span class="tag req">บังคับ</span><br>
+      <code>requestPaymentDate</code> <span class="tag req">บังคับ</span> · <code>paymentDueDate</code><br>
+      <code>payeeShortTitle</code> <code>payeeFirstName</code> <span class="tag req">บังคับ</span> <code>payeeLastName</code><br>
+      <code>mobileNo</code> (ใช้ส่ง SMS แจ้งผล) · <code>email</code></p>
+      <p class="note"><span class="hl">RI ส่วนใหญ่ผู้รับเงินเป็นนิติบุคคล</span> → ตกลงกันว่าใส่ชื่อบริษัทลง <code>payeeFirstName</code> และเว้น <code>payeeLastName</code> ว่าง</p>
+    </div>
+    <div class="card ok">
+      <h4>2 · ข้อมูลบัญชีรับเงิน</h4>
+      <p><b>ถ้าช่องทาง = โอนเงิน ต้องมีครบทุกตัว:</b><br>
+      <code>bankId</code> <code>bankName</code> <code>bankAbbrName</code> <code>botBankCode</code> <code>bankAccountNo</code> <code>bankBranch</code></p>
+      <p><b>ถ้าเป็นพร้อมเพย์:</b> <code>promptpayType</code> (<code>I</code>=บัตรประชาชน / <code>M</code>=มือถือ) + <code>promptpayNo</code></p>
+      <p class="note">รหัสธนาคารต้องตรงกับตารางของ Cenpay ไม่ใช่รหัสภายในของ RI</p>
+    </div>
+    <div class="card">
+      <h4>3 · จำนวนเงิน &amp; ภาษี</h4>
+      <p><code>amount</code> <code>grossAmount</code> <code>whtAmount</code><br>
+      <code>taxName</code> <code>taxAddress1</code> <code>taxAddress2</code> <code>taxNo</code><br>
+      <code>taxType</code> (1ก / 1ก พิเศษ / 2 / 3 / 2ก / 3ก / 53) · <code>whtType</code> · <code>whtRate</code> · <code>invoiceNo</code></p>
+      <p class="note">จ่ายให้บริษัทรับประกันภัยต่อ มักเป็น <b>ภ.ง.ด.53</b> → ต้องมีอย่างน้อย 1 เคส</p>
+    </div>
+    <div class="card">
+      <h4>4 · ข้อมูลกรมธรรม์</h4>
+      <p><code>policyNo</code> · <code>policyType</code> (ORD/IND/GOV/PA/UL/GRP/PAG) · <code>productCode</code><br>
+      <code>branchSourceCode</code> <code>branchRegisterCode</code> <code>branchServiceCode</code> · <code>channelCode</code><br>
+      <code>policyStartDate</code> · <code>paymentMode</code> · <code>premiumAnnualAmount</code> · <code>premiumModeAmount</code></p>
+    </div>
+    <div class="card dgr" style="grid-column:1/-1">
+      <h4>5 · เอกสารแนบ (List)</h4>
+      <p><code>documentName</code> · <code>dmsDocId</code> · <code>documentUploadDate</code> · <code>documentUploadBy</code></p>
+      <p class="note"><span class="hl">สำคัญ:</span> <code>dmsDocId</code> ต้องเป็นเอกสารที่ <b>อัปโหลดเข้า DMS จริงแล้ว</b> — ถ้าใส่เลขสมมติ Cenpay จะเปิดเอกสารไม่ได้ตอนตรวจอนุมัติ และเทสจะติดตรงขั้นตรวจสอบ</p>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-title="ตัวอย่าง payload">
+  <span class="kicker">ตัวอย่าง</span>
+  <h2>หน้าตาข้อมูลที่ส่งเข้า Cenpay</h2>
+  <p class="sub"><span class="mono">POST /thaisamut/rs/paymentmg/v2/payment-batch/landing</span> · ค่าทั้งหมดเป็นข้อมูลสมมติสำหรับทดสอบ</p>
+<pre><span class="c">// 1 Batch มี 2 รายการ — รายการที่ 2 ยอดเกิน 2 ล้าน จึงจะถูก Split</span>
+{
+  <span class="k">"batchOperNo"</span>: <span class="s">"RI-TB-20260817-00001"</span>,
+  <span class="k">"transactionGroup"</span>: <span class="s">"EI"</span>,          <span class="c">// ประกันภัยต่อ</span>
+  <span class="k">"transactionType"</span>: <span class="s">"RIP"</span>,          <span class="c">// จ่ายประกันภัยต่อ</span>
+  <span class="k">"paymentChannel"</span>: <span class="s">"TRB"</span>,
+  <span class="k">"accReferenceNo"</span>: <span class="s">"EI256808170001"</span>,
+  <span class="k">"requestPaymentDate"</span>: <span class="s">"2026-08-17T00:00:00Z"</span>,
+  <span class="k">"totalTransaction"</span>: <span class="n">2</span>,               <span class="c">// ต้องเท่ากับจำนวนรายการจริง</span>
+  <span class="k">"totalAmount"</span>: <span class="n">2500000.00</span>,          <span class="c">// ต้องเท่ากับผลรวม amount</span>
+  <span class="k">"approvedBy"</span>: <span class="s">"somchai.pi"</span>,
+  <span class="k">"approvedDate"</span>: <span class="s">"2026-08-17T10:30:00Z"</span>,
+  <span class="k">"tax"</span>: <span class="s">"WHT"</span>,
+  <span class="k">"paymentDetails"</span>: [
+    {
+      <span class="k">"operRefNo"</span>: <span class="s">"RI0001"</span>,
+      <span class="k">"transactionGroup"</span>: <span class="s">"EI"</span>, <span class="k">"transactionType"</span>: <span class="s">"RIP"</span>, <span class="k">"paymentChannel"</span>: <span class="s">"TRB"</span>,
+      <span class="k">"requestPaymentDate"</span>: <span class="s">"2026-08-17T00:00:00Z"</span>,
+      <span class="k">"payeeFirstName"</span>: <span class="s">"บริษัท ตัวอย่างรีอินชัวรันส์ จำกัด"</span>,   <span class="c">// นิติบุคคล → ไม่มีนามสกุล</span>
+      <span class="k">"mobileNo"</span>: <span class="s">"08XXXXXXXX"</span>,
+      <span class="k">"bankId"</span>: <span class="n">1</span>, <span class="k">"bankName"</span>: <span class="s">"กสิกรไทย"</span>, <span class="k">"bankAbbrName"</span>: <span class="s">"KBANK"</span>,
+      <span class="k">"botBankCode"</span>: <span class="s">"004"</span>, <span class="k">"bankAccountNo"</span>: <span class="s">"XXXXXXXXXX"</span>, <span class="k">"bankBranch"</span>: <span class="s">"อโศก"</span>,
+      <span class="k">"amount"</span>: <span class="n">500000.00</span>, <span class="k">"grossAmount"</span>: <span class="n">500000.00</span>, <span class="k">"whtAmount"</span>: <span class="n">5000.00</span>,
+      <span class="k">"taxName"</span>: <span class="s">"บริษัท ตัวอย่างรีอินชัวรันส์ จำกัด"</span>, <span class="k">"taxNo"</span>: <span class="s">"0XXXXXXXXXXXX"</span>,
+      <span class="k">"taxType"</span>: <span class="s">"53"</span>, <span class="k">"whtRate"</span>: <span class="n">1.0</span>, <span class="k">"invoiceNo"</span>: <span class="s">"INV-RI-0001"</span>,
+      <span class="k">"policyNo"</span>: <span class="s">"XXXXXXX"</span>, <span class="k">"policyType"</span>: <span class="s">"ORD"</span>, <span class="k">"productCode"</span>: <span class="s">"496"</span>,
+      <span class="k">"branchSourceCode"</span>: <span class="s">"0116"</span>, <span class="k">"channelCode"</span>: <span class="s">"5075600"</span>,
+      <span class="k">"documentList"</span>: [
+        { <span class="k">"documentName"</span>: <span class="s">"RI_Statement.pdf"</span>, <span class="k">"dmsDocId"</span>: <span class="s">"DMS202608170001"</span>,
+          <span class="k">"documentUploadDate"</span>: <span class="s">"2026-08-17T08:30:00Z"</span>, <span class="k">"documentUploadBy"</span>: <span class="s">"somchai.pi"</span> }
+      ]
+    },
+    { <span class="k">"operRefNo"</span>: <span class="s">"RI0002"</span>, <span class="c">/* ... */</span> <span class="k">"amount"</span>: <span class="n">2000000.00</span> }
+  ]
+}</pre>
+  <div class="grid g3" style="margin-top:6px">
+    <div class="card ok"><h4>200 Success</h4><p class="note">Cenpay รับรายการเข้าหน้าจอรับรายการเรียบร้อย</p></div>
+    <div class="card warn"><h4>400 Bad Request</h4><p class="note">ข้อมูลไม่ครบหรือผิดรูปแบบ</p></div>
+    <div class="card dgr"><h4>409 Conflict</h4><p class="note"><code>batchOperNo</code> ซ้ำกับที่เคยส่งแล้ว</p></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-title="กลไก Batch Split">
+  <span class="kicker">กลไกเฉพาะของ Cenpay</span>
+  <h2>Batch Split — เคสที่ห้ามลืมเตรียม</h2>
+  <p class="sub">Cenpay จะแยก Batch อัตโนมัติเมื่อเข้าเงื่อนไข ถ้าไม่มีข้อมูลเคสนี้ = ทดสอบไม่ครบ</p>
+
+  <div class="grid g2">
+    <div class="card dgr">
+      <h4>เงื่อนไข “ถูก Split”</h4>
+      <p class="big" style="font-size:22px">มีรายการยอด &gt; 2,000,000 บาท<br><span class="note" style="font-size:15px">และ</span><br>ใน Batch มีมากกว่า 1 รายการ</p>
+      <p>&rarr; Batch สถานะ <code>BAS</code> (Batch Split)<br>&rarr; Cenpay แยกเป็น “กลุ่มเกิน 2 ล้าน” กับ “กลุ่มไม่เกิน”<br>&rarr; เลข Batch ใหม่รูปแบบ <span class="mono">CP-TB-20250904-00001_1-2</span></p>
+    </div>
+    <div class="card ok">
+      <h4>เงื่อนไข “ไม่ถูก Split”</h4>
+      <p class="big" style="font-size:22px">ทุกรายการไม่เกิน 2 ล้าน<br><span class="note" style="font-size:15px">หรือ</span><br>มีรายการเดียวใน Batch</p>
+      <p>&rarr; Batch สถานะ <code>PEN</code> (รอยืนยัน)<br>&rarr; ทุกรายการสถานะ <code>WCF</code> (รอยืนยันทำจ่าย ฝ่ายการเงิน)</p>
+    </div>
+  </div>
+
+  <h3>ข้อมูลขั้นต่ำที่ต้องเตรียมเพื่อคลุมกลไกนี้</h3>
+  <div class="wrap">
+  <table>
+    <tr><th>#</th><th>Batch ทดสอบ</th><th>องค์ประกอบ</th><th>ผลที่คาดหวัง</th></tr>
+    <tr><td>1</td><td>Batch ปกติ</td><td>3 รายการ ยอดละ 100,000</td><td>สถานะ <code>PEN</code> ไม่แยก Batch</td></tr>
+    <tr><td>2</td><td>Batch รายการเดียวยอดสูง</td><td>1 รายการ ยอด 5,000,000</td><td>สถานะ <code>PEN</code> (ไม่ Split เพราะมีรายการเดียว)</td></tr>
+    <tr><td>3</td><td><b>Batch ที่ต้อง Split</b></td><td>4 รายการ: 2 รายการเกิน 2 ล้าน + 2 รายการไม่เกิน</td><td>สถานะ <code>BAS</code> + เกิด Batch ย่อย 2 ชุด</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-title="เมทริกซ์เคสทดสอบ">
+  <span class="kicker">ชุดข้อมูลที่ 3</span>
+  <h2>เมทริกซ์เคสทดสอบที่ควรเตรียม</h2>
+  <p class="sub">แนะนำเตรียมอย่างน้อย 1 Batch ต่อ 1 บรรทัด</p>
+  <div class="wrap">
+  <table>
+    <tr><th>กลุ่ม</th><th>เคส</th><th>ข้อมูลที่ต้องจัด</th><th>ผลที่คาดหวัง</th></tr>
+    <tr><td rowspan="4">ช่องทางจ่าย</td><td>โอนปกติ / โอนด่วน</td><td><code>TRB</code> / <code>TRE</code> + ข้อมูลบัญชีครบ</td><td>เข้าคิวทำจ่ายผ่านธนาคาร</td></tr>
+    <tr><td>พร้อมเพย์ 2 แบบ</td><td><code>PMP</code> + <code>promptpayType</code> = <code>I</code> และ <code>M</code></td><td>จ่ายผ่านพร้อมเพย์ได้ทั้ง 2 แบบ</td></tr>
+    <tr><td>เช็ค</td><td><code>BKC</code> เช็คธนาคาร / <code>COM</code> เช็คบริษัท</td><td>ได้เลขเช็ค + วันที่ออกเช็ค/หมดอายุ</td></tr>
+    <tr><td>ต่างประเทศ <span class="hl">(เฉพาะ RI)</span></td><td><code>OVR</code> โอนต่างประเทศ / <code>BHT</code> Bahtnet</td><td>รองรับผู้รับเงินที่เป็น reinsurer ต่างประเทศ</td></tr>
+    <tr><td rowspan="3">ภาษี</td><td>มี WHT</td><td><code>whtAmount</code>, <code>whtRate</code>, <code>taxType</code>=53</td><td>ยอดสุทธิและหนังสือรับรองหัก ณ ที่จ่ายถูกต้อง</td></tr>
+    <tr><td>ไม่มี WHT</td><td><code>whtAmount</code> = 0</td><td>จ่ายเต็มจำนวน</td></tr>
+    <tr><td>ผู้รับเป็นนิติบุคคล</td><td>ชื่อบริษัทใน <code>payeeFirstName</code>, มี <code>taxNo</code> 13 หลัก</td><td>แสดงชื่อผู้รับถูกต้องบนหน้าจอและเช็ค</td></tr>
+    <tr><td rowspan="3">Batch</td><td>Batch ปกติ / Batch Split</td><td>ตามสไลด์ก่อนหน้า</td><td><code>PEN</code> / <code>BAS</code></td></tr>
+    <tr><td>Batch ใหญ่</td><td>รายการจำนวนมากใน 1 Batch</td><td>ทดสอบ performance + limit 300 ตอนดึงสถานะ</td></tr>
+    <tr><td>เช็คคืน – จ่ายใหม่</td><td>ส่ง <code>previousbatchOperNo</code> + <code>previousTransactionType</code></td><td>ผูกกับรายการเดิมได้</td></tr>
+    <tr><td rowspan="3">Negative</td><td>ข้อมูลไม่ครบ</td><td>ตัด field บังคับออก เช่น ไม่ส่ง <code>approvedBy</code></td><td><code>400 Bad Request</code></td></tr>
+    <tr><td>ส่งซ้ำ</td><td><code>batchOperNo</code> เดิมยิงซ้ำ</td><td><code>409 Conflict</code> ไม่เกิดข้อมูลซ้ำ</td></tr>
+    <tr><td>ยอดไม่ตรง</td><td><code>totalAmount</code> ไม่เท่ากับผลรวม detail</td><td>ระบบต้องไม่รับ หรือแจ้ง error</td></tr>
+    <tr><td rowspan="3">เฉพาะฝั่ง RI<br><span class="note">เพิ่ม 19 ส.ค. 2026</span></td><td>ส่งซ้ำแถวเดิม</td><td>กดส่งเข้า PayM 2 ครั้งที่ offset แถวเดิม (ต้องปรับ <code>process_status_paym</code> กลับเป็นสถานะที่กดได้ก่อน)</td><td>ได้ <code>batch_oper_no</code> ใหม่ทับเลขเดิม · PayM ได้ <code>oper_ref_no</code> ของรอบล่าสุด คนละ <code>payment_header_id</code> · เลขเก่าไม่ปรากฏฝั่ง PayM</td></tr>
+    <tr><td>ขารับ ไม่ส่ง PayM</td><td>offset ที่ <code>net_amount &gt; 0</code></td><td>ไม่ Generate เลขอ้างอิง และไม่ส่งเข้า PayM แต่ปุ่มยังกดได้ (ไม่ถูกตีตกผิดขา)</td></tr>
+    <tr><td>Offset ใหม่ทับรายการเดิม</td><td>ทำ Offset ใหม่ทับ summary ที่มี <code>tx_ri_actual_offset_id_old</code></td><td>รายการใหม่ได้ <code>process_status_paym</code> / <code>batch_oper_no</code> / <code>remark_paym</code> ยกมาจากแถวเดิม · แถวเดิมกลายเป็น “ยกเลิกข้อมูล” และเลขเป็น NULL</td></tr>
+    <tr><td rowspan="2">ปลายทาง</td><td>จ่ายสำเร็จ</td><td>บัญชีทดสอบที่โอนได้จริงใน UAT</td><td>สถานะจ่ายสำเร็จ + SMS/Email แจ้งผล</td></tr>
+    <tr><td>จ่ายไม่สำเร็จ</td><td>เลขบัญชีผิด หรือบัญชีปิด</td><td>สถานะ reject + Auto Mail แจ้งจ่ายไม่สำเร็จ + RI รับสถานะกลับได้</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-title="รับสถานะกลับ">
+  <span class="kicker">อย่าลืมครึ่งหลัง</span>
+  <h2>ฝั่ง RI ต้องดึงสถานะกลับเอง</h2>
+  <p class="sub">Cenpay <b>ไม่ push</b> สถานะกลับ — ระบบต้นทางเป็นฝ่ายเรียกถาม</p>
+
+  <div class="grid g2">
+    <div class="card acc">
+      <h4>API ที่ต้องเรียก</h4>
+      <p class="mono">POST /thaisamut/rs/paymentmg/v2/payment-verification</p>
+      <p><b>Input:</b> รายการ <code>operRefNo</code> — <span class="hl">สูงสุด 300 รายการต่อครั้ง</span></p>
+      <p><b>Output ที่ได้:</b> <code>batchOperNo</code>, <code>batchOperStatus</code>, <code>transactionStatus</code>, <code>targetStatus</code>, <code>chequeNo</code>, <code>chequeIssueDate</code>, <code>chequeExpiryDate</code>, <code>paidDate</code>, <code>batchPaymentNo</code>, <code>reason</code> (กรณี reject)</p>
+    </div>
+    <div class="card warn">
+      <h4>สิ่งที่ต้องพร้อมฝั่ง RI ก่อน UAT</h4>
+      <ul>
+        <li>Job หรือหน้าจอสำหรับเรียก API นี้เป็นรอบ</li>
+        <li>ตาราง mapping <code>targetStatus</code> ของ Cenpay → สถานะภายในของ RI</li>
+        <li>วิธีจัดการเมื่อรายการเกิน 300 (แบ่งรอบเรียก)</li>
+        <li>หน้าจอให้ QA ตรวจว่าสถานะอัปเดตกลับมาจริง</li>
+      </ul>
+      <p class="note">ถ้าส่วนนี้ยังไม่พร้อม จะทดสอบได้แค่ “ส่งเข้า” ไม่ได้ทดสอบ end-to-end</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-title="Master data">
+  <span class="kicker">ก่อนเริ่มเทส</span>
+  <h2>Master Data ที่ต้อง sync ให้ตรงกัน 2 ฝั่ง</h2>
+  <p class="sub">ถ้าข้อใดข้อหนึ่งไม่ตรง รายการจะตกตั้งแต่ยิงเข้า</p>
+  <div class="wrap">
+  <table>
+    <tr><th>รายการ</th><th>ต้องตรวจอะไร</th><th>ผู้รับผิดชอบ</th></tr>
+    <tr><td>cf_lookup_catalog</td><td>ต้องมี <code>13008 (EI)</code>, <code>14030 (RIP)</code>, <code>72069 (EI↔RIP)</code> และเปิดใช้งานใน environment UAT</td><td>ทีม Cenpay</td></tr>
+    <tr><td>รหัสธนาคาร</td><td><code>bankId</code> ↔ <code>botBankCode</code> ↔ <code>bankAbbrName</code> ใช้ชุดเดียวกับ Cenpay</td><td>RI + Cenpay</td></tr>
+    <tr><td>cf_running_pattern</td><td>รูปแบบ running <code>transaction_no</code> ของกลุ่ม EI</td><td>ทีม Cenpay</td></tr>
+    <tr><td>Service / Bank Account / GL mapping</td><td>ธุรกรรม RI ต้องผูกกับบัญชีบริษัทและผังบัญชีที่ถูกต้อง</td><td>Cenpay + บัญชี</td></tr>
+    <tr><td>accReferenceNo</td><td>รูปแบบเลขอ้างอิงบัญชีของ RI ที่ EDW/SUN รับรู้</td><td>RI + บัญชี</td></tr>
+    <tr><td>DMS</td><td>เอกสารแนบทดสอบถูกอัปโหลดจริง และ <code>dmsDocId</code> เปิดดูได้</td><td>RI</td></tr>
+    <tr><td>User และสิทธิ์</td><td>ผู้อนุมัติฝั่ง RI · ผู้ตรวจ/อนุมัติ/ยืนยันโอนฝั่ง Cenpay (maker–checker)</td><td>ทั้งสองฝั่ง</td></tr>
+    <tr><td>บัญชีธนาคารทดสอบ</td><td>บัญชีใน UAT ที่โอนได้จริง (KTB API / BBL) หรือข้อตกลงว่าจะ mock</td><td>Cenpay + การเงิน</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-title="Checklist ส่งมอบ">
+  <span class="kicker">Checklist</span>
+  <h2>รายการส่งมอบของ QA ฝั่ง RI</h2>
+  <p class="sub">ใช้เป็นรายการติ๊กก่อนแจ้งว่า “ข้อมูลพร้อมทดสอบ”</p>
+  <div class="grid g2">
+    <div class="card">
+      <h4>ข้อมูลทดสอบ</h4>
+      <ul class="chk">
+        <li>ไฟล์หรือชุดข้อมูล Batch + รายการจ่าย ครบตามเมทริกซ์เคส</li>
+        <li>ทุก Batch: <code>totalTransaction</code> และ <code>totalAmount</code> ตรงกับ detail</li>
+        <li>มีเคส Batch Split (รายการเกิน 2 ล้าน + มากกว่า 1 รายการ)</li>
+        <li>ครบทุกช่องทางจ่ายที่ RI ใช้จริง (รวม OVR/BHT ถ้ามีต่างประเทศ)</li>
+        <li>มีเคส WHT และไม่มี WHT</li>
+        <li>มีเคส Negative (400 / 409 / ยอดไม่ตรง)</li>
+        <li>เลข <code>batchOperNo</code> ไม่ซ้ำกับที่เคยส่ง</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>ของประกอบ</h4>
+      <ul class="chk">
+        <li>เอกสารแนบอัปโหลดเข้า DMS แล้ว และเปิดดูได้จริง</li>
+        <li>User ผู้อนุมัติฝั่ง RI พร้อมใช้งาน</li>
+        <li>ตาราง “รายการทดสอบ ↔ ผลลัพธ์ที่คาดหวัง”</li>
+        <li>ระบุช่วงวันที่และจำนวน Batch ที่จะทยอยส่ง</li>
+        <li>Job หรือหน้าจอฝั่ง RI สำหรับดึงสถานะกลับ พร้อมทดสอบ</li>
+        <li>ตาราง mapping สถานะ Cenpay → สถานะ RI</li>
+        <li>ผู้ประสานงาน + ช่องทางแจ้งปัญหาระหว่าง UAT</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- 11b -->
+<section class="slide" data-title="งานที่ยังเดินอยู่ (Redmine)">
+  <span class="kicker">อัปเดต · 19 ส.ค. 2026</span>
+  <h2>งานฝั่ง RI ที่ยังเดินอยู่ — ผลต่อการเตรียมข้อมูล</h2>
+  <p class="sub">WBS แม่: <a href="https://redmine.ochi.link/issues/90110">#90110 G9 — จ่ายประกันภัยต่อ จากระบบ Manual RI</a> (Cenpay project 20220161) · คืบหน้า 76% · Suthanee Saelim / Supakit Singwieng</p>
+
+  <div class="wrap">
+  <table>
+    <tr><th>Issue</th><th>สถานะ</th><th>สาระ</th><th>ผลต่อการเตรียมข้อมูลทดสอบ</th></tr>
+    <tr>
+      <td><a href="https://redmine.ochi.link/issues/93290">#93290</a><br><span class="note">Task · 14–18 ส.ค.</span></td>
+      <td><span class="tag new">Resolved</span></td>
+      <td>ย้ายจุด Generate <code>batch_oper_no</code> จากปุ่ม “ส่งขออนุมัติ” (SD005) ไปปุ่ม “พิจารณาอนุมัติเข้าฝ่ายการเงิน” (SD007/SD008) และเปลี่ยนจาก gen ครั้งเดียวตลอดชีวิตรายการ &rarr; <b>gen ใหม่ทุกครั้งที่กด</b><br><span class="note">repo <code>msa-adwetl</code> · commit <code>7a70434c32</code>, <code>b6d1a29fc6</code>, <code>bdeccca524</code> · ทดสอบ end-to-end กับ <code>msa-paymentmg</code> จริงแล้ว (ยังไม่ทดสอบบน SIT)</span></td>
+      <td>เคสทดสอบต้องมี <b>“ส่งซ้ำแถวเดิม”</b> แล้วตรวจว่า PayM ได้เลขรอบล่าสุด และเลขเก่าไม่ปรากฏฝั่ง PayM</td>
+    </tr>
+    <tr>
+      <td><a href="https://redmine.ochi.link/issues/93953">#93953</a><br><span class="note">WBS · 19 ส.ค.</span></td>
+      <td><span class="tag fix">New</span></td>
+      <td>ปรับหน้าจอ <b>EDW-RI-SD007</b>: ตัดปุ่ม + popup “พิจารณาอนุมัติเข้าฝ่ายการเงิน” ออก · เพิ่มคอลัมน์ “สถานะฝ่ายการเงิน” ใน datagrid โดยให้กลายเป็น<b>ปุ่มส่งซ้ำเข้า PayM</b> เมื่อสถานะเป็นเคส fail · เพิ่มเงื่อนไขให้ปุ่ม “อนุมัติเข้า EDW” เป็นตัวส่งเข้า PayM<br><span class="note">wiki pageId 989856045</span></td>
+      <td>Flow ที่จะทดสอบเปลี่ยน: <b>ไม่มีขั้น “อนุมัติเข้าการเงิน” แยก</b> อีก — ปุ่มเดียวคุมทั้งเข้า EDW และเข้า PayM</td>
+    </tr>
+    <tr>
+      <td><a href="https://redmine.ochi.link/issues/93955">#93955</a><br><span class="note">WBS · 19 ส.ค.</span></td>
+      <td><span class="tag fix">New</span></td>
+      <td>ปรับหน้าจอ <b>EDW-RI-SD005</b>: ตัดการ Gen เลขอ้างอิงออก · เพิ่มเงื่อนไขในขั้นตอน Offset ข้อมูล<br><span class="note">wiki pageId 983269499</span></td>
+      <td>เคส <b>“Offset ใหม่ทับรายการเดิม”</b> ต้องตรวจว่าสถานะ/เลข PayM ถูกยกยอดมาถูกต้อง (ดูการ์ดล่าง)</td>
+    </tr>
+    <tr>
+      <td><a href="https://redmine.ochi.link/issues/93943">#93943</a><br><span class="note">WBS · 19 ส.ค.</span></td>
+      <td><span class="tag fix">New</span></td>
+      <td><b>[DB][msa-adwetl] Alter Table <code>tx_ri_summary</code></b> — เพิ่มคอลัมน์ <code>tx_ri_actual_offset_id_old</code></td>
+      <td>รองรับเงื่อนไขของ #93955: ต้องมีคอลัมน์นี้ก่อน ไม่งั้นทดสอบเคส Offset ใหม่ไม่ได้</td>
+    </tr>
+  </table>
+  </div>
+
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card acc">
+      <h4>เงื่อนไข Offset ใหม่ (#93955 + #93943) — spec 19/08/2026</h4>
+      <ol>
+        <li>ตอน Offset ใหม่ ให้เช็ค <code>tx_ri_summary.tx_ri_actual_offset_id_old</code> — ถ้ามีค่า ให้ใช้ค่านั้นไปหาแถวเดิมใน <code>tx_ri_actual_offset</code></li>
+        <li>ยกค่า <code>process_status_paym</code> · <code>batch_oper_no</code> · <code>remark_paym</code> จากแถวเดิม มาใส่รายการ Offset ใหม่</li>
+        <li>อัปเดต <code>tx_ri_summary.tx_ri_actual_offset_id</code> = ID ใหม่ แล้วเซ็ต <code>tx_ri_actual_offset_id_old</code> = NULL</li>
+        <li>แถว offset เดิม: <code>process_status_paym</code> = “ยกเลิกข้อมูล” · <code>batch_oper_no</code> และ <code>remark_paym</code> = NULL</li>
+      </ol>
+    </div>
+    <div class="card dgr">
+      <h4>ประเด็นที่ต้องเคลียร์ก่อนล็อกชุดข้อมูลทดสอบ</h4>
+      <p><span class="hl">#93290 เพิ่งย้ายจุด Generate ไปไว้ที่ปุ่ม “พิจารณาอนุมัติเข้าฝ่ายการเงิน” (Resolved 18 ส.ค.) แล้ว #93953 สั่งตัดปุ่มนั้นออก (สร้าง 19 ส.ค.)</span> ⇒ จุด Generate ต้องย้ายอีกรอบไปอยู่กับปุ่ม “อนุมัติเข้า EDW” · ต้องยืนยันว่าใบไหนเป็นข้อสรุปสุดท้าย ก่อนเขียนเคสทดสอบเรื่องเลขอ้างอิง</p>
+      <p class="note">อื่น ๆ ที่ค้าง: หน้าจอ SD008 จริงยังไม่มีคอลัมน์ “เลขอ้างอิง” (wiki ลิสต์ไว้แล้ว) · <code>tx_ri_offset_transaction.batch_oper_no</code> ของขา actual&rarr;EDW เป็น NULL (ผลข้างเคียงที่ยอมรับแล้ว) · wiki SD007 ยังมีคำอธิบายปุ่ม “พิจารณาอนุมัติเข้าการเงิน” ค้างอยู่ ทั้งที่ #93953 สั่งตัดออก</p>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-title="ประเด็นที่ต้องเคลียร์">
+  <span class="kicker">ก่อนเริ่ม</span>
+  <h2>ประเด็นที่ต้องตกลงกันก่อน</h2>
+  <div class="grid g2">
+    <div class="card ok">
+      <h4>1 · รูปแบบเลข Batch ของ RI <span class="tag new">เคลียร์แล้ว</span></h4>
+      <p>กำหนดเป็น <span class="mono">RI-TB-{YYYYMMDD}-{running 5 หลัก}</span> เช่น <span class="mono">RI-TB-20260818-00001</span> (spec EDW-RI-SD007 · suthanee.sa 14/08/2026 · ทดสอบจริงแล้วใน #93290)</p>
+      <p class="note">ประเด็นที่เหลือ: เลขนี้ถูกส่งเป็น <code>operRefNo</code> ไม่ใช่ <code>batchOperNo</code> — ต้องยืนยันกับ Cenpay ว่าฝั่ง RI ใช้อะไรเป็น <code>batchOperNo</code> ระดับ Batch</p>
+    </div>
+    <div class="card warn">
+      <h4>2 · ผู้รับเงินนิติบุคคล</h4>
+      <p>ตกลงวิธีใส่ชื่อบริษัทลงช่อง <code>payeeFirstName</code> / <code>payeeLastName</code> ให้ตรงกัน เพื่อไม่ให้ชื่อบนเช็คหรือหน้าจอผิด</p>
+    </div>
+    <div class="card warn">
+      <h4>3 · การจ่ายต่างประเทศ</h4>
+      <p>ถ้า RI ต้องจ่าย reinsurer ต่างประเทศ ต้องยืนยันว่าใช้ <code>OVR</code>/<code>BHT</code> และต้องมีข้อมูลอะไรเพิ่ม (SWIFT ฯลฯ) — spec ปัจจุบันไม่ได้ระบุ field เฉพาะไว้</p>
+    </div>
+    <div class="card dgr">
+      <h4>4 · แผน UAT ยังไม่มีแถวของ RI</h4>
+      <p>ไฟล์ <span class="mono">Plan UAT Cenpay.xlsx</span> (Lot 2 / Lot 3, ช่วง 17/08–16/09/2026) <b>ยังไม่มีรายการประกันภัยต่อ</b> — ถ้า Individual New RI ต้องเข้ารอบนี้ ต้องเพิ่มแถวและกำหนดวันทดสอบ</p>
+    </div>
+  </div>
+  <h3>ลำดับงานที่แนะนำ</h3>
+  <div class="flow">
+    <div class="step"><b>สัปดาห์ที่ 1</b>เคลียร์จุด Generate <code>batch_oper_no</code> (#93953) + master data + สิทธิ์ผู้ใช้</div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>สัปดาห์ที่ 2</b>จัดชุดข้อมูลตามเมทริกซ์ + อัปโหลดเอกสารเข้า DMS</div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>สัปดาห์ที่ 3</b>ยิง Landing เคสละ Batch + ตรวจผลบนหน้าจอ Cenpay</div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>สัปดาห์ที่ 4</b>ทดสอบจ่ายจริง + ดึงสถานะกลับ + เคส reject</div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-title="สรุป">
+  <span class="kicker">สรุป</span>
+  <h2>จำ 5 ข้อนี้พอ</h2>
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card acc"><h4>1 · รหัสต้องถูก</h4><p>กลุ่ม <code>EI</code> · รายการ <code>RIP</code> · ยิงเข้า <span class="mono">02 WS Landing</span></p></div>
+    <div class="card acc"><h4>2 · ยอดต้องตรง</h4><p><code>totalTransaction</code> / <code>totalAmount</code> ต้องตรงกับรายการจริงในทุก Batch</p></div>
+    <div class="card acc"><h4>3 · ช่องทางโอน = ข้อมูลธนาคารครบ</h4><p>ขาดตัวใดตัวหนึ่งจ่ายไม่ได้ · พร้อมเพย์ต้องระบุ <code>I</code>/<code>M</code></p></div>
+    <div class="card acc"><h4>4 · ต้องมีเคสเกิน 2 ล้าน</h4><p>ไม่งั้นไม่ได้ทดสอบ Batch Split ซึ่งเป็นกลไกหลักของ Cenpay</p></div>
+    <div class="card acc" style="grid-column:1/-1"><h4>5 · ครึ่งหลังสำคัญเท่าครึ่งแรก</h4><p>RI ต้องมีตัวดึงสถานะกลับผ่าน <span class="mono">01 WS payment-verification</span> (สูงสุด 300 รายการ/ครั้ง) ไม่งั้นทดสอบได้แค่ทางเดียว</p></div>
+  </div>
+  <p class="note" style="margin-top:26px">
+    ที่มาเพิ่มเติม (19 ส.ค. 2026): Redmine WBS <a href="https://redmine.ochi.link/issues/90110">#90110</a> + <a href="https://redmine.ochi.link/issues/93943">#93943</a> · <a href="https://redmine.ochi.link/issues/93953">#93953</a> · <a href="https://redmine.ochi.link/issues/93955">#93955</a> · <a href="https://redmine.ochi.link/issues/93290">#93290</a> · Confluence space <code>RDSADW</code> — EDW-RI-SD005 (pageId 983269499), EDW-RI-SD007 (pageId 989856045)<br>
+    ที่มาของข้อมูลทั้งหมด: Confluence space <code>RDSCPENH</code> — “02 WS Landing ข้อมูลเข้าสู่หน้าจอรับรายการ”, “01 WS ตรวจสอบข้อมูลการจ่ายเงินจากระบบ Payment Management”, “API ระบบ Payment Management”, “4. Configuration Data”
+  </p>
+</section>
+
+</div>
+
+<nav>
+  <button onclick="go(-1)">&larr; ก่อนหน้า</button>
+  <button onclick="go(1)">ถัดไป &rarr;</button>
+  <div id="bar"><div id="fill"></div></div>
+  <span id="title"></span>
+  <span id="count"></span>
+</nav>
+
+<script>
+  var slides = document.querySelectorAll('.slide'), i = 0;
+  function show(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    for (var k = 0; k < slides.length; k++) {
+      if (k === i) { slides[k].classList.add('on'); } else { slides[k].classList.remove('on'); }
+    }
+    document.getElementById('count').textContent = (i + 1) + ' / ' + slides.length;
+    document.getElementById('fill').style.width = ((i + 1) / slides.length * 100) + '%';
+    document.getElementById('title').textContent = slides[i].getAttribute('data-title') || '';
+    slides[i].scrollTop = 0;
+    location.hash = i + 1;
+  }
+  function go(d){ show(i + d); }
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { go(1); e.preventDefault(); }
+    if (e.key === 'ArrowLeft'  || e.key === 'PageUp')  { go(-1); e.preventDefault(); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End')  show(slides.length - 1);
+    if (e.key === 'p' || e.key === 'P') window.print();
+  });
+  show((parseInt(location.hash.replace('#',''), 10) - 1) || 0);
+</script>
+</body>
+</html>

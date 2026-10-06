@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo ก่อนเริ่ม UAT — Manual RI &amp; การบันทึกบัญชี</title>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#16212e; --line:#26374a; --ink:#e8eef5; --muted:#9db0c4;
+    --accent:#4da3ff; --accent2:#37d39b; --warn:#ffb648; --danger:#ff6b6b; --chip:#1f2f41;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Leelawadee UI","Segoe UI",Tahoma,"Noto Sans Thai",sans-serif;
+    font-size:16px; line-height:1.6;
+  }
+  #deck{height:100vh;display:flex;flex-direction:column}
+  .slide{
+    display:none; flex:1; overflow:auto;
+    padding:38px 54px 90px;
+    animation:fade .18s ease-out;
+  }
+  .slide.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  h1{font-size:38px;line-height:1.25;margin:0 0 6px}
+  h2{font-size:27px;margin:0 0 4px;color:#fff}
+  h3{font-size:19px;margin:22px 0 8px;color:var(--accent)}
+  p{margin:8px 0}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 22px}
+  .lead{font-size:18px;color:#cfe0f0}
+
+  .kicker{
+    display:inline-block;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);border:1px solid var(--line);border-radius:999px;
+    padding:4px 13px;margin-bottom:14px;background:var(--chip)
+  }
+  code,.mono{font-family:Consolas,"Cascadia Mono",monospace;font-size:.93em}
+  code{background:#1d2b3a;color:#9fd0ff;padding:1px 6px;border-radius:5px;border:1px solid #24384d}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0 6px;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+  th{background:#1b2836;color:#cfe0f0;font-weight:600;white-space:nowrap}
+  tr:nth-child(even) td{background:#141f2b}
+  .wrap{overflow-x:auto}
+
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:900px){.g2,.g3{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card h4{margin:0 0 8px;font-size:16px;color:#fff}
+  .card.acc{border-left:4px solid var(--accent)}
+  .card.ok{border-left:4px solid var(--accent2)}
+  .card.warn{border-left:4px solid var(--warn)}
+  .card.dgr{border-left:4px solid var(--danger)}
+
+  .tag{display:inline-block;padding:2px 9px;border-radius:6px;font-size:12.5px;font-weight:600;white-space:nowrap}
+  .req{background:#4a1f24;color:#ff9b9b;border:1px solid #6d2d34}
+  .opt{background:#213244;color:#9db0c4;border:1px solid #2c435a}
+  .cond{background:#4a3c1c;color:#ffcf80;border:1px solid #6b552a}
+
+  ul,ol{margin:8px 0 8px 22px;padding:0}
+  li{margin:5px 0}
+  .chk li{list-style:none;position:relative;padding-left:26px}
+  .chk li:before{content:"\2610";position:absolute;left:0;color:var(--accent);font-size:17px}
+
+  pre{
+    background:#0c141d;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;overflow:auto;font-size:13px;line-height:1.55;
+    font-family:Consolas,"Cascadia Mono",monospace;color:#bcd6ef
+  }
+  pre .k{color:#7fd3ff}pre .s{color:#a8e6b0}pre .n{color:#ffcf80}pre .c{color:#6f8399}
+
+  .flow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin:16px 0}
+  .step{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .step b{display:block;color:var(--accent);font-size:12.5px;letter-spacing:.08em;margin-bottom:4px}
+  .arrow{align-self:center;color:var(--muted);font-size:22px}
+
+  .big{font-size:30px;font-weight:700;color:#fff}
+  .note{color:var(--muted);font-size:14px}
+  .hl{color:var(--warn);font-weight:600}
+    a{color:var(--accent)}
+    .tag.new{background:#123a2c;color:#7ff0c0;border:1px solid #1e6b4f}
+    .tag.fix{background:#3a2412;color:#ffc98a;border:1px solid #6b4a1e}
+
+  nav{
+    position:fixed;left:0;right:0;bottom:0;height:58px;
+    display:flex;align-items:center;gap:14px;padding:0 22px;
+    background:rgba(15,23,32,.94);border-top:1px solid var(--line);backdrop-filter:blur(6px)
+  }
+  nav button{
+    background:var(--chip);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:7px 15px;font-size:14px;cursor:pointer;font-family:inherit
+  }
+  nav button:hover{border-color:var(--accent);color:#fff}
+  #bar{flex:1;height:4px;background:#1d2b3a;border-radius:99px;overflow:hidden}
+  #fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}
+  #count{color:var(--muted);font-size:14px;min-width:74px;text-align:right}
+  #title{color:var(--muted);font-size:14px;max-width:38vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  @media print{
+    nav{display:none}
+    .slide{display:block!important;page-break-after:always;height:auto;padding:24px}
+    body{background:#fff;color:#111}
+    .card,pre,th,td{background:#fff!important;border-color:#bbb!important;color:#111!important}
+    h1,h2,.card h4{color:#000}
+  }
+</style>
+</head>
+<body>
+<div id="deck">
+
+
+<!-- 1 ปก -->
+<section class="slide" data-title="ปก">
+  <span class="kicker">UAT · Manual RI &rarr; Cenpay / PayM · G9</span>
+  <h1>Demo ก่อนเริ่ม <span style="color:var(--accent)">UAT</span><br>ระบบจ่ายประกันภัยต่อ (Manual RI)</h1>
+  <p class="lead" style="margin-top:14px">แผน UAT <span class="hl">10 &ndash; 17 กันยายน 2026</span> &nbsp;·&nbsp; 6 วันทำการ</p>
+  <div class="grid g2" style="margin-top:26px">
+    <div class="card acc">
+      <h4>ส่วน A · Manual RI</h4>
+      <p>หน้าจอ EDW-RI (SD005 / SD007) &rarr; ออกเลขอ้างอิง &rarr; ส่งเข้าระบบการเงิน PayM &rarr; ดึงสถานะการจ่ายกลับ</p>
+    </div>
+    <div class="card ok">
+      <h4>ส่วน B · การบันทึกบัญชี</h4>
+      <p>ตรวจสอบบันทึกบัญชี &rarr; EDW Core &rarr; คู่บัญชี (double entry) &rarr; สร้าง File SUN</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:28px">
+    Redmine WBS <a href="https://redmine.ochi.link/issues/90110">#90110</a> &mdash; G9 จ่ายประกันภัยต่อ จากระบบ Manual RI ·
+    Defect SIT ทั้งหมดอยู่ใต้ <a href="https://redmine.ochi.link/issues/95023">#95023</a> ·
+    ข้อมูลผล SIT ณ 9 ก.ย. 2026
+  </p>
+</section>
+
+<!-- 2 ขอบเขต -->
+<section class="slide" data-title="UAT รอบนี้ทดสอบอะไร">
+  <span class="kicker">ขอบเขต</span>
+  <h2>UAT รอบนี้ทดสอบอะไร</h2>
+  <p class="sub">ไม่ใช่ core RI ยิงตรง &mdash; ของที่คุยกับ Cenpay คือ <b>Manual RI ผ่านหน้าจอ EDW-RI</b></p>
+
+  <div class="flow">
+    <div class="step"><b>ต้นทาง</b>EDW-RI-SD005<br><span class="note">ตรวจสอบ + Offset ข้อมูล Actual RI</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>อนุมัติ</b>EDW-RI-SD007<br><span class="note">อนุมัติเข้า EDW + ออกเลขอ้างอิง + ส่ง PayM</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>การเงิน</b>PayM<br><span class="note">ตรวจ &rarr; อนุมัติ &rarr; ทำจ่าย</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>บัญชี</b>EDW Core<br><span class="note">คู่บัญชี + File SUN</span></div>
+  </div>
+
+  <div class="grid" style="margin-top:20px">
+    <div class="card acc">
+      <h4>อยู่ในรอบนี้</h4>
+      <ul>
+        <li>Offset ข้อมูล Actual RI และส่งขออนุมัติ</li>
+        <li>อนุมัติเข้า EDW &rarr; ออกเลขอ้างอิง &rarr; ส่ง PayM</li>
+        <li>ส่งซ้ำเข้า PayM จากคอลัมน์สถานะฝ่ายการเงิน</li>
+        <li>รับสถานะการจ่ายกลับ (batch 10 นาที)</li>
+        <li>บันทึกบัญชี + คู่บัญชี + สร้าง File SUN</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3 สถานะตั้งต้น -->
+<section class="slide" data-title="สถานะตั้งต้นจาก SIT">
+  <span class="kicker">จุดตั้งต้น</span>
+  <h2>เข้า UAT ด้วยผล SIT แบบนี้</h2>
+  <p class="sub">Test Checklist SIT &mdash; RI-EDW หน้าจอพิจารณาอนุมัติข้อมูล Actual เข้า EDW · 63 เคส · ทดสอบ 25 ส.ค. &ndash; 8 ก.ย. 2026</p>
+
+  <div class="grid g3">
+    <div class="card ok"><h4>Passed</h4><p class="big">53</p><p class="note">84% ของทั้งหมด</p></div>
+    <div class="card dgr"><h4>Failed</h4><p class="big">1</p><p class="note">อีเมลแจ้งเตือน</p></div>
+    <div class="card warn"><h4>ทดสอบไม่ได้ / ยังไม่ทดสอบ</h4><p class="big">9</p><p class="note">Cancelled 7 · Not Start 2</p></div>
+  </div>
+
+  <h3>2 เรื่องที่ยังค้างและกระทบ UAT ตรง ๆ</h3>
+  <div class="grid g2">
+    <div class="card dgr">
+      <h4><a href="https://redmine.ochi.link/issues/99867">#99867</a> · New <span class="tag cond">8 ก.ย.</span></h4>
+      <p>ทำ <b>Offset ใหม่</b> แล้วใบใหม่ไม่รับช่วงเลขอ้างอิง/สถานะฝ่ายการเงินจากใบเดิม &rarr; ออกเลขใหม่ + <b>ส่ง PayM ซ้ำ</b> + ใบเดิมไม่ถูกล้างค่า</p>
+      <p class="note">= กติกาของ #93955 ยังไม่ทำงาน · กระทบเคส "ยกเลิกรายการแล้ว Offset ใหม่" ทั้งชุด</p>
+    </div>
+    <div class="card dgr">
+      <h4><a href="https://redmine.ochi.link/issues/99492">#99492</a> · Reopened <span class="tag cond">9 ก.ย.</span></h4>
+      <p>ไม่ส่งอีเมล <code>EDW_RI_AM007</code> เมื่อ batch อัปเดตสถานะเป็น 15 / 18 / 20</p>
+      <p class="note">yml บน SIT ไม่มี key &rarr; สร้าง email shell ไม่ได้ แล้ว <b>return เงียบ · batch ยังตอบ SUCCESS</b> · config #99527 ลงแล้วแต่ยังไม่ออก</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:16px">อีก 2 เคสที่ยังไม่ได้ทดสอบเลย (T-16 / T-17) เป็นเรื่อง <b>ยอดเงินซ้ำและแถวผี</b> ซึ่งกระทบตัวเลขบัญชีโดยตรง &mdash; ต้องหยิบมาทำในรอบ UAT</p>
+</section>
+
+<!-- 4 ไทม์ไลน์ -->
+<section class="slide" data-title="แผน 10–17 ก.ย.">
+  <span class="kicker">แผน · ข้อเสนอ ปรับได้</span>
+  <h2>10 &ndash; 17 กันยายน 2026</h2>
+  <p class="sub">12&ndash;13 ก.ย. เป็นเสาร์&ndash;อาทิตย์ &rarr; เหลือ <b>6 วันทำการ</b> · เว้นไว้เป็น buffer</p>
+  <div class="wrap">
+  <table>
+    <tr><th>วัน</th><th>หัวข้อ</th><th>สิ่งที่ต้องได้ตอนจบวัน</th><th>ส่วน</th></tr>
+    <tr><td><b>พฤ. 10 ก.ย.</b></td><td>Demo + เคลียร์ pre-condition</td><td>ทุกคนเห็นเส้นทางข้อมูลตรงกัน · สิทธิ์ user / ผังบัญชี / ข้อมูลทดสอบพร้อม</td><td>&mdash;</td></tr>
+    <tr><td><b>ศ. 11 ก.ย.</b></td><td>SD005 Offset &rarr; ส่งขออนุมัติ &rarr; SD007 อนุมัติเข้า EDW</td><td>มีเลข <code>RI-TB-…</code> และรายการเข้าหน้าจอ PayM จริง</td><td>A</td></tr>
+    <tr><td><b>จ. 14 ก.ย.</b></td><td>ฝั่งการเงิน: maker&ndash;checker &rarr; ทำจ่าย &rarr; สถานะกลับ</td><td>สถานะฝ่ายการเงินบน SD007 เดินตามจริง ไม่ค้างที่ 13</td><td>A</td></tr>
+    <tr><td><b>อ. 15 ก.ย.</b></td><td>อนุมัติจ่ายและบันทึกบัญชี &rarr; EDW Core</td><td>เห็นคู่บัญชีใน <code>tx_adw_double_entry_detail</code> ครบทั้ง Dr/Cr</td><td>B</td></tr>
+    <tr><td><b>พ. 16 ก.ย.</b></td><td>File SUN + เคส negative (ส่งซ้ำ / ไม่อนุมัติ / ขารับ)</td><td>ไฟล์ SUN ออกที่ path ที่กำหนดและบัญชีตรงกับรายงาน</td><td>B</td></tr>
+    <tr><td><b>พฤ. 17 ก.ย.</b></td><td>Retest defect ค้าง + สรุปผล</td><td>ปิด/ตกลงสถานะทุก defect ที่เปิดในรอบ UAT</td><td>A + B</td></tr>
+  </table>
+  </div>
+  <p class="note">ข้อสังเกต: ขา A ต้องเสร็จก่อน ขา B จึงเริ่มได้ &mdash; บัญชีขาจ่ายเกิดหลังการเงินอนุมัติจ่าย ถ้าวันที่ 14 ไม่จบ ขา B จะเลื่อนทั้งแถว</p>
+</section>
+
+<!-- 5 ส่วน A ปก -->
+<section class="slide" data-title="ส่วน A · Manual RI">
+  <span class="kicker">ส่วน A</span>
+  <h1 style="margin-top:8px">Manual RI</h1>
+  <p class="lead">ตั้งแต่ Offset ข้อมูล Actual RI จนรายการเข้าไปอยู่ในระบบการเงิน และสถานะเดินกลับมา</p>
+  <div class="flow" style="margin-top:30px">
+    <div class="step"><b>SD005</b>Offset<br><span class="note">เขียน <code>tx_ri_actual_offset</code><br>สถานะ "รอพิจารณาอนุมัติเข้า EDW"</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>SD007</b>อนุมัติเข้า EDW<br><span class="note">ออกเลขอ้างอิง + ส่ง PayM<br>(เฉพาะขาจ่าย)</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>PayM</b>ทำจ่าย<br><span class="note"><code>tx_payment_detail.oper_ref_no</code></span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>EDW_BH_054</b>ดึงสถานะกลับ<br><span class="note">รอบทุก 10 นาที<br>อ่านจาก <code>batch_oper_no</code></span></div>
+  </div>
+  <p class="note" style="margin-top:24px">repo <code>msa-adwetl</code> (หน้าจอ EDW-RI) &harr; <code>msa-paymentmg</code> (PayM) · batch <code>adwetl:batchSyncPayRI</code></p>
+</section>
+
+<!-- 6 กฎ -->
+<section class="slide" data-title="5 กฎที่ต้องจำ">
+  <span class="kicker">ส่วน A · กติกา</span>
+  <h2>5 กฎที่ต้องจำก่อนกดปุ่มใด ๆ</h2>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card acc"><h4>1 · ขาจ่ายกับขารับเดินคนละทาง</h4>
+      <p><b>ขาจ่าย</b> (<code>net_amount &lt; 0</code>) = ออกเลขอ้างอิง + ส่ง PayM<br>
+      <b>ขารับ</b> (ยอดบวก) = ไม่ส่ง PayM ไม่มีเลขอ้างอิง <span class="note">โดยดีไซน์ ไม่ใช่บั๊ก</span></p></div>
+    <div class="card acc"><h4>2 · เลขอ้างอิงออกใหม่ทุกครั้งที่ส่ง</h4>
+      <p><code>RI-TB-YYYYMMDD-00001</code> · running ที่ <code>tx_running_no</code> key <code>H_RI_TB/YYYYMMDD</code><br>
+      ส่งใหม่ = <span class="hl">ทับเลขเดิม</span> และ PayM ทิ้งรายการเก่า</p></div>
+    <div class="card acc"><h4>3 · จุดออกเลขอยู่ที่ 2 ปุ่มนี้เท่านั้น</h4>
+      <p>ปุ่ม <b>"พิจารณาอนุมัติข้อมูลเข้า EDW"</b> · ปุ่มบน <b>คอลัมน์สถานะฝ่ายการเงิน</b> (ส่งซ้ำ)<br>
+      <span class="note">ปุ่ม "พิจารณาอนุมัติเข้าฝ่ายการเงิน" ถูกตัดออกแล้ว</span></p></div>
+    <div class="card acc"><h4>4 · การส่งมี WS 2 ตัวเรียงกัน</h4>
+      <p>WS1 บันทึก<b>รายการจ่าย</b> &rarr; WS2 บันทึก<b>ประมาณการจ่าย</b><br>
+      ติดที่ WS2 หมายเหตุต้องเป็น "ไม่สามารถบันทึกรายการประมาณการจ่ายได้" และรายการนั้น<b>ต้องมีเลขอ้างอิงแล้ว</b></p></div>
+    <div class="card acc" style="grid-column:1/-1"><h4>5 · ชื่อคอลัมน์หลอก</h4>
+      <p>เลขเก็บที่ <code>tx_ri_actual_offset.batch_oper_no</code> แต่ส่งเข้า PayM เป็น <code>operRefNo</code> <b>ระดับรายการ</b> ไม่ใช่ <code>batchOperNo</code> ระดับ Batch ·
+      ถ้า <code>oper_ref_no</code> ฝั่ง PayM ไม่ตรงทุกตัวอักษร batch <code>EDW_BH_054</code> จะหาสถานะไม่เจอทุกรอบและยิงอีเมลแจ้ง IT ทุก 10 นาที</p></div>
+  </div>
+</section>
+
+<!-- 7 สถานะ -->
+<section class="slide" data-title="สถานะฝ่ายการเงิน">
+  <span class="kicker">ส่วน A · สิ่งที่จะเห็นบนหน้าจอ</span>
+  <h2>คอลัมน์ "สถานะฝ่ายการเงิน" อ่านอย่างไร</h2>
+  <p class="sub">ค่ามาจาก <code>tx_ri_actual_offset.process_status_paym</code> · อ้าง spec A5 สถานะการพิจารณาข้อมูล (wiki pageId 961216654 v.14)</p>
+  <div class="wrap">
+  <table>
+    <tr><th>id</th><th>สถานะ</th><th>หน้าจอแสดงเป็น</th><th>กดส่งซ้ำได้</th></tr>
+    <tr><td>12</td><td>ส่งข้อมูลเข้าระบบ PayM ไม่สำเร็จ</td><td>ปุ่มสีแดง ตัวอักษรขาว</td><td><span class="tag new">ได้</span></td></tr>
+    <tr><td>15</td><td>ไม่ผ่านการตรวจสอบ (ฝ่ายการเงิน)</td><td>ปุ่มสีแดง ตัวอักษรขาว</td><td><span class="tag new">ได้</span></td></tr>
+    <tr><td>18</td><td>จ่ายเงินไม่สำเร็จ</td><td>ปุ่มสีแดง ตัวอักษรขาว</td><td><span class="tag new">ได้</span></td></tr>
+    <tr><td>20</td><td>ระงับการจ่าย</td><td>ปุ่มสีแดง ตัวอักษรขาว</td><td><span class="tag new">ได้</span></td></tr>
+    <tr><td>13</td><td>รอยืนยันทำจ่าย (ฝ่ายการเงิน)</td><td>ข้อความสีฟ้า</td><td><span class="tag opt">ไม่ได้ &mdash; กันจ่ายซ้ำ</span></td></tr>
+    <tr><td>14 / 16 / 17</td><td>รอตรวจสอบ / รออนุมัติจ่าย / รอบันทึกผลการจ่าย</td><td>ข้อความสีฟ้า</td><td><span class="tag opt">ไม่ได้</span></td></tr>
+    <tr><td>19</td><td>จ่ายเงินสำเร็จ</td><td>ข้อความสีปกติ (ไม่ใช่เขียว)</td><td><span class="tag opt">ไม่ได้</span></td></tr>
+    <tr><td>21</td><td>นำส่งข้อมูลไปยังระบบการเงินใหม่</td><td>&mdash;</td><td><span class="tag cond">ได้ &mdash; แต่ต้องใช้เลขเดิม</span></td></tr>
+    <tr><td><code>-</code></td><td>ยังไม่เคยส่ง (<code>NULL</code>)</td><td>ขีด กดไม่ได้</td><td><span class="tag opt">ไม่ได้</span></td></tr>
+  </table>
+  </div>
+  <p class="note">สถานะ 15 / 18 / 20 มาจาก <code>targetStatus</code> ฝั่ง PayM <code>ICF</code> / <code>FLT</code> / <code>SPP</code> ที่ batch ดึงกลับมา map</p>
+</section>
+
+<!-- 8 demo script A -->
+<section class="slide" data-title="ลำดับ Demo · ส่วน A">
+  <span class="kicker">ส่วน A · สคริปต์ Demo</span>
+  <h2>ลำดับที่จะกดให้ดู</h2>
+  <ol style="font-size:15.5px">
+    <li><b>SD005 · Offset</b> &mdash; ค้นหาข้อมูล Actual RI ของรอบที่ทดสอบ &rarr; ติ๊ก &rarr; ปุ่ม Actual Offset &rarr; กรอกวันที่คาดว่าจะรับ/จ่าย + หมายเหตุ &rarr; ยืนยัน 2 ชั้น<br>
+      <span class="note">จุดตรวจ: เกิดใบ Offset สถานะ "รอส่งขออนุมัติเข้า EDW" · <span class="hl">ยังไม่มีเลขอ้างอิงที่จอนี้</span></span></li>
+    <li><b>SD005 · ส่งขออนุมัติ</b> &mdash; แท็บ Actual Offset &rarr; ติ๊กใบใหม่ &rarr; ส่งขออนุมัติ &rarr; เลือก "ยืนยันข้อมูล ส่งขออนุมัติ" + เลือกธนาคาร + แนบไฟล์ PDF<br>
+      <span class="note">จุดตรวจ: สถานะเป็น "รอพิจารณาอนุมัติเข้า EDW" · เอกสารขึ้น DMS</span></li>
+    <li><b>SD007 · เปิดหน้าพิจารณา</b> (คนละ user กับผู้ส่งขออนุมัติ) &mdash; ชี้ให้ดูว่าติ๊กได้เฉพาะแถว "รอพิจารณาอนุมัติเข้า EDW" และคอลัมน์สถานะฝ่ายการเงินอยู่ถัดจากสถานะรายการ</li>
+    <li><b>SD007 · อนุมัติเข้า EDW (ขาจ่าย)</b> &mdash; ติ๊ก &rarr; อนุมัติ &rarr; ยืนยัน<br>
+      <span class="note">จุดตรวจ: ได้เลข <code>RI-TB-…</code> · สถานะฝ่ายการเงิน = 13 · รายการโผล่ในหน้าจอรับรายการของ PayM</span></li>
+    <li><b>เทียบเลขสองฝั่ง</b> &mdash; <code>tx_ri_actual_offset.batch_oper_no</code> เทียบ <code>tx_payment_detail.oper_ref_no</code> ต้องตรงทุกตัวอักษร</li>
+    <li><b>ขารับ</b> &mdash; อนุมัติใบขารับให้ดู 1 ใบ: <span class="hl">ไม่มีเลขอ้างอิง ไม่ส่ง PayM</span> แต่ปุ่มยังกดได้</li>
+    <li><b>ส่งซ้ำ</b> &mdash; หยิบแถวสถานะ 12/15/18/20 &rarr; กดที่คอลัมน์สถานะฝ่ายการเงิน &rarr; popup ยืนยัน<br>
+      <span class="note">จุดตรวจ: ได้เลขใหม่ทับเลขเดิม · หมายเหตุเก่าไม่ค้าง · ผู้ทำรายการ/วันที่เปลี่ยนเป็นคนที่กด</span></li>
+    <li><b>รอ batch</b> <code>EDW_BH_054</code> รอบถัดไป (ไม่เกิน 10 นาที) &mdash; สถานะฝ่ายการเงินเดินเองจาก 13 ไปตามผลจริงฝั่งการเงิน</li>
+  </ol>
+</section>
+
+<!-- 9 ระวัง A -->
+<section class="slide" data-title="ข้อควรระวัง · ส่วน A">
+  <span class="kicker">ส่วน A · ข้อควรระวัง</span>
+  <h2>สิ่งที่ต้องบอกผู้ทดสอบล่วงหน้า</h2>
+  <div class="grid g2">
+    <div class="card dgr"><h4>อย่าเริ่มด้วยเคส "ยกเลิกแล้ว Offset ใหม่"</h4>
+      <p>เคสนี้กำลังพัง (<a href="https://redmine.ochi.link/issues/99867">#99867</a>) &mdash; จะได้เลขใหม่และ<b>ส่ง PayM ซ้ำเป็นรายการที่สอง</b> ทำให้ข้อมูลฝั่งการเงินเลอะตั้งแต่วันแรก</p>
+      <p class="note">ถ้าจะทดสอบ ให้ทำเป็นเคสแยกท้ายรอบ และแจ้งฝั่งการเงินก่อนว่าจะมีรายการซ้ำ</p></div>
+    <div class="card warn"><h4>อีเมลแจ้งเตือนยังไม่ออก</h4>
+      <p><code>EDW_RI_AM007</code> (<a href="https://redmine.ochi.link/issues/99492">#99492</a>) &mdash; ถ้าไม่ได้อีเมล อย่าสรุปว่าไม่มีรายการ fail <b>ต้องเปิดหน้าจอดูเอง</b></p></div>
+    <div class="card warn"><h4>รายการที่ข้อมูลธนาคารไม่ครบยังหลุดเข้า PayM ได้</h4>
+      <p>พบใน SIT (เคส U-26) ว่าลบเลขบัญชีออกแล้วยังส่งเข้า PayM ได้ &mdash; ให้ช่วยกันจับตาจุดนี้ในรอบ UAT</p></div>
+    <div class="card acc"><h4>กดซ้ำเร็ว ๆ / สองคนกดพร้อมกัน</h4>
+      <p>สถานะ 13 ต้อง disable ปุ่มได้จริง · running no ต้องไม่ชนกัน &mdash; เป็นเคสที่ควรลองจริงในรอบนี้</p></div>
+  </div>
+</section>
+
+<!-- 10 ส่วน B ปก -->
+<section class="slide" data-title="ส่วน B · การบันทึกบัญชี">
+  <span class="kicker">ส่วน B</span>
+  <h1 style="margin-top:8px">การบันทึกบัญชี</h1>
+  <p class="lead">บัญชีของงานนี้ไม่ได้เกิดครั้งเดียว &mdash; เกิด 2 จังหวะ คนละที่ คนละคนกด</p>
+  <div class="grid g2" style="margin-top:26px">
+    <div class="card ok">
+      <h4>จังหวะที่ 1 · ขารับ &mdash; ที่ EDW</h4>
+      <p>ตอนกด <b>อนุมัติเข้า EDW</b> ที่ SD007<br>
+      <span class="hl">ขารับลง GL · ขาจ่ายไม่ลง GL</span></p>
+      <p class="note">ยืนยันแล้วใน SIT (เคส T-28 Passed) &mdash; วิธีตรวจคือนับแถว GL ก่อน/หลังทุกครั้ง</p>
+    </div>
+    <div class="card ok">
+      <h4>จังหวะที่ 2 · ขาจ่าย &mdash; ที่ PayM แล้วเด้งกลับ EDW</h4>
+      <p>เจ้าหน้าที่การเงินกด <b>อนุมัติจ่ายและบันทึกบัญชี</b> ที่ PayM &rarr; Trigger กลับมา EDW &rarr; บันทึกบัญชี + <b>สร้าง File SUN</b></p>
+      <p class="note">อ้าง process 02_62_01 (Confluence space RDSADW)</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:24px">
+    เพราะแบบนี้ ขาจ่ายจึง "ไม่ลง GL" ตอนอนุมัติเข้า EDW &mdash; ไม่ใช่ว่าไม่ลงบัญชี แต่บัญชี<b>ยังไม่ถึงเวลา</b> ต้องรอการเงินอนุมัติจ่ายก่อน
+  </p>
+</section>
+
+<!-- 11 event code -->
+<section class="slide" data-title="ผังบัญชี &amp; event_code">
+  <span class="kicker">ส่วน B · การตั้งค่า</span>
+  <h2>ผังบัญชีผูกด้วย event_code</h2>
+  <p class="sub">ตั้งค่าที่ <code>cf_event_code</code> (ผังบัญชี) และ <code>cf_adwpc_query_model</code> (การบันทึกจำนวนเงินในผัง)</p>
+  <div class="wrap">
+  <table>
+    <tr><th>event_code</th><th>กลุ่มธุรกรรม</th><th>เกี่ยวกับ UAT รอบนี้</th></tr>
+    <tr><td><code>PM_FIN_02</code></td><td>จ่ายเงิน</td><td><span class="tag new">ตัวหลัก</span> รายการจ่ายประกันภัยต่อที่อนุมัติจ่ายแล้ว</td></tr>
+    <tr><td><code>PM_FIN_01</code></td><td>รายการไม่ผ่านตรวจสอบ</td><td><span class="tag cond">ต้องทดสอบ</span> คู่กับเคส reject ของฝ่ายการเงิน (สถานะ 15)</td></tr>
+    <tr><td><code>PM_FIN_03</code></td><td>ค่าธรรมเนียมธนาคาร</td><td><span class="tag opt">ยังไม่มีเคสฝั่ง RI</span> ต้องตกลงว่าอยู่ในรอบนี้หรือไม่</td></tr>
+  </table>
+  </div>
+  <div class="card warn" style="margin-top:18px">
+    <h4>ต้องยืนยันก่อนวันที่ 15 ก.ย.</h4>
+    <ul>
+      <li>ผัง <code>cf_event_code</code> / <code>cf_adwpc_query_model</code> ถูก config สำหรับธุรกรรม <b>ประกันภัยต่อ</b> แล้วหรือยัง</li>
+      <li>รายการ RI ใช้ <code>PM_FIN_02</code> ตัวเดียว หรือมีผังเฉพาะของ RI</li>
+      <li>ผูกบัญชีบริษัท (Bank Account) กับธุรกรรม RI เรียบร้อยแล้วหรือไม่</li>
+    </ul>
+    <p class="note">ถ้าข้อใดยังไม่พร้อม บัญชีจะไม่ลงหรือลงผิดผัง แล้วจะแยกไม่ออกว่าเป็นบั๊กหรือ config &mdash; ยังไม่มีเคสทดสอบข้อนี้ในชุด SIT</p>
+  </div>
+</section>
+
+<!-- 12 ตารางบัญชี -->
+<section class="slide" data-title="ปลายทางที่ต้องเห็น">
+  <span class="kicker">ส่วน B · จุดตรวจ</span>
+  <h2>เมื่อบันทึกบัญชีสำเร็จ ต้องเห็นอะไร</h2>
+  <div class="flow">
+    <div class="step"><b>1</b>PayM<br><span class="note">อนุมัติจ่ายและบันทึกบัญชี</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>2</b>Table Landing<br><span class="note">ข้อมูลจาก PayM</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>3</b>EDW Core<br><span class="note">Transaction + คู่บัญชี</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>4</b>File SUN<br><span class="note">ส่งออกไปตาม path</span></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card acc"><h4>กลุ่มข้อมูล Transaction</h4>
+      <ul style="font-size:14.5px">
+        <li><code>tx_adw_account_head</code> · <code>tx_adw_account_head_system</code></li>
+        <li><code>tx_adw_transaction_policy</code> · <code>tx_adw_transaction_detail</code></li>
+        <li><code>tx_adw_group_trans</code> · <code>tx_adw_group_trans_detail</code></li>
+        <li><code>tx_adw_other_income_fee_detail</code> · <code>tx_adw_bank_ho_detail</code></li>
+      </ul></div>
+    <div class="card ok"><h4>กลุ่มข้อมูลการลงบัญชี</h4>
+      <p><code>tx_adw_double_entry_detail</code> &mdash; คู่บัญชี Dr/Cr</p>
+      <p class="note">จุดตรวจสำคัญ: เดบิตเท่าเครดิต · ผังตรงกับ event_code · จำนวนเงินตรงกับยอดที่จ่ายจริง ไม่ใช่ยอดก่อนหัก WHT</p>
+      <h4 style="margin-top:14px">ตรวจผลบนหน้าจอ</h4>
+      <p>เมนูตรวจสอบรายการ EDW (รายงาน Query) &mdash; <span class="note">03_08 หน้าจอตรวจสอบรายการ EDW</span></p></div>
+  </div>
+  <p class="note" style="margin-top:14px">File SUN ใช้กลไกเดียวกับ Process การสร้างไฟล์สำหรับข้อมูล Payment (02_00_03_02) &mdash; ต้องตรวจทั้งว่า<b>ไฟล์ออก</b> และ<b>ยอดในไฟล์ตรงกับคู่บัญชี</b></p>
+</section>
+
+<!-- 13 demo script B -->
+<section class="slide" data-title="ลำดับ Demo · ส่วน B">
+  <span class="kicker">ส่วน B · สคริปต์ Demo</span>
+  <h2>ลำดับที่จะกดให้ดู</h2>
+  <ol style="font-size:15.5px">
+    <li><b>นับแถวบัญชีก่อน</b> &mdash; จดจำนวนแถว GL / คู่บัญชีไว้ก่อนเริ่มทุกครั้ง ไม่งั้นเทียบทีหลังไม่ได้</li>
+    <li><b>อนุมัติใบขารับที่ SD007</b> &rarr; นับแถวใหม่ &mdash; <span class="hl">ต้องเพิ่ม</span></li>
+    <li><b>อนุมัติใบขาจ่ายที่ SD007</b> &rarr; นับแถวใหม่ &mdash; <span class="hl">ต้องไม่เพิ่ม</span> (บัญชีขาจ่ายยังไม่เกิด)</li>
+    <li><b>ไปฝั่งการเงิน</b> &mdash; ตรวจ &rarr; อนุมัติ &rarr; <b>อนุมัติจ่ายและบันทึกบัญชี</b></li>
+    <li><b>กลับมาที่ EDW</b> &mdash; เปิดเมนูตรวจสอบรายการ EDW: ต้องเห็นรายการจ่ายพร้อมคู่บัญชีของ <code>PM_FIN_02</code></li>
+    <li><b>ตรวจคู่บัญชี</b> ใน <code>tx_adw_double_entry_detail</code> &mdash; Dr เท่ากับ Cr · ผังตรงกับที่ตกลง · ยอดตรงกับที่จ่ายจริง</li>
+    <li><b>ตรวจ File SUN</b> &mdash; ไฟล์ออกที่ path ที่กำหนด · ยอดในไฟล์ตรงกับคู่บัญชี</li>
+    <li><b>เคส reject</b> &mdash; ให้การเงิน "ไม่ผ่านการตรวจสอบ" 1 ใบ &rarr; สถานะกลับมาเป็น 15 บน SD007 และบัญชีเดินตาม <code>PM_FIN_01</code></li>
+    <li><b>เคสส่งซ้ำ</b> &mdash; กดส่งซ้ำใบที่ reject &rarr; ยืนยันว่า<b>ไม่เกิดคู่บัญชีซ้ำ</b> จากรายการเดิม</li>
+  </ol>
+  <p class="note">ข้อ 9 คือจุดที่อันตรายที่สุดของรอบนี้ &mdash; ส่งซ้ำแล้วบัญชีลงสองรอบคือความเสียหายที่แก้ย้อนหลังยากที่สุด</p>
+</section>
+
+<!-- 14 pre-condition -->
+<section class="slide" data-title="ต้องพร้อมก่อน 10 ก.ย.">
+  <span class="kicker">เตรียมความพร้อม</span>
+  <h2>ต้องเขียวก่อนเริ่มวันแรก</h2>
+  <p class="sub">ถ้าข้อใดไม่พร้อม เคสจะตกที่ข้อมูลตั้งต้น แล้วแยกไม่ออกจากบั๊กจริง</p>
+  <div class="wrap">
+  <table>
+    <tr><th>เรื่อง</th><th>รายละเอียด</th><th>ผู้รับผิดชอบ</th></tr>
+    <tr><td>สิทธิ์ผู้ใช้</td><td>ผู้ส่งขออนุมัติกับผู้พิจารณาต้อง<b>คนละ user</b> · ฝั่งการเงินต้องแยก maker / checker</td><td>RI + การเงิน</td></tr>
+    <tr><td>ข้อมูลทดสอบ</td><td>มีทั้ง<b>ขาจ่าย</b> (ยอดลบ) และ<b>ขารับ</b> (ยอดบวก) · มีเคสสกุลเงินต่างประเทศถ้าจะทดสอบ</td><td>RI</td></tr>
+    <tr><td>ผังบัญชี</td><td><code>cf_event_code</code> · <code>cf_adwpc_query_model</code> ของ <code>PM_FIN_01/02</code> พร้อมสำหรับธุรกรรม RI</td><td>บัญชี + EDW</td></tr>
+    <tr><td>บัญชีธนาคาร</td><td>บัญชีบริษัทผูกกับธุรกรรม RI · ปลายทางรับเงินเป็นบัญชี UAT ที่โอนได้จริง หรือตกลงใช้ mock</td><td>การเงิน + Cenpay</td></tr>
+    <tr><td>ข้อมูลผู้รับเงิน</td><td>ชื่อบริษัทรับประกันภัยต่อ · เลขบัญชี · รหัสธนาคารชุดเดียวกับ Cenpay · ข้อมูล WHT</td><td>RI</td></tr>
+    <tr><td>เอกสาร DMS</td><td>ไฟล์แนบอัปโหลดจริงและเปิดดูได้จากหน้าจอ Cenpay</td><td>RI</td></tr>
+    <tr><td>batch &amp; อีเมล</td><td><code>EDW_BH_054</code> เปิดรอบทำงานอยู่ · config อีเมล <code>EDW_RI_AM007</code> ใช้ได้จริง</td><td>IT</td></tr>
+    <tr><td>Path File SUN</td><td>ปลายทางไฟล์บน UAT ตั้งไว้แล้วและมีสิทธิ์เข้าไปดู</td><td>EDW + บัญชี</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- 15 บทบาท -->
+<section class="slide" data-title="ใครทำอะไร">
+  <span class="kicker">การทำงานในรอบ UAT</span>
+  <h2>ใครทำอะไร และแจ้งปัญหาอย่างไร</h2>
+  <div class="grid g3">
+    <div class="card acc"><h4>ฝั่ง RI / คณิตศาสตร์ประกัน</h4><p>Offset · ส่งขออนุมัติ · พิจารณาอนุมัติเข้า EDW · ตรวจสถานะที่เดินกลับมา</p></div>
+    <div class="card acc"><h4>ฝั่งการเงิน</h4><p>ตรวจ &rarr; อนุมัติ &rarr; ทำจ่าย &rarr; <b>อนุมัติจ่ายและบันทึกบัญชี</b> · เคส reject / ระงับการจ่าย</p></div>
+    <div class="card acc"><h4>ฝั่งบัญชี / EDW</h4><p>ตรวจคู่บัญชี · ตรวจผังตาม event_code · ตรวจ File SUN</p></div>
+  </div>
+  <h3>เวลาเจอปัญหา ให้แนบ 5 อย่างนี้ทุกครั้ง</h3>
+  <div class="card">
+    <ol style="margin:0 0 0 22px">
+      <li><b>เลขอ้างอิง</b> <code>RI-TB-…</code> และ <code>tx_ri_actual_offset_id</code> ของใบที่ทำ</li>
+      <li><b>เวลาที่กด</b> (ระบุนาที) และ <b>user</b> ที่ใช้</li>
+      <li>สถานะรายการ + สถานะฝ่ายการเงิน <b>ก่อนและหลัง</b></li>
+      <li>ภาพหน้าจอที่เห็นปัญหา รวมข้อความ error เต็ม ๆ</li>
+      <li>ทำผ่าน<b>หน้าจอ</b> หรือมีการ<b>แก้ข้อมูลด้วย script</b> ระหว่างทาง</li>
+    </ol>
+  </div>
+  <p class="note">ข้อ 5 สำคัญกว่าที่คิด &mdash; ในรอบ SIT มีหลายเคสที่ผ่านเพราะจัดข้อมูลด้วย script แล้วพอเดิน flow จริงกลับพัง</p>
+</section>
+
+<!-- 16 สรุป -->
+<section class="slide" data-title="สรุป">
+  <span class="kicker">สรุป</span>
+  <h2>จำ 5 ข้อนี้พอ</h2>
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card acc"><h4>1 · ขาจ่ายไป PayM ขารับลง GL</h4><p>สองขาเดินคนละทางตั้งแต่ต้น อย่าเอาเกณฑ์เดียวกันไปตรวจทั้งคู่</p></div>
+    <div class="card acc"><h4>2 · เลขอ้างอิงออกใหม่ทุกครั้งที่ส่ง</h4><p>ยกเว้นการส่งซ้ำจากสถานะ 21 ที่ต้องใช้เลขเดิม</p></div>
+    <div class="card acc"><h4>3 · บัญชีเกิด 2 จังหวะ</h4><p>ขารับที่ EDW ตอนอนุมัติ · ขาจ่ายที่ PayM ตอนอนุมัติจ่ายและบันทึกบัญชี แล้วเด้งกลับมา EDW + File SUN</p></div>
+    <div class="card acc"><h4>4 · นับแถวบัญชีก่อนกดทุกครั้ง</h4><p>เป็นวิธีเดียวที่จับ "บัญชีลงซ้ำ" ได้ทันที</p></div>
+    <div class="card dgr" style="grid-column:1/-1"><h4>5 · เข้ารอบนี้ด้วยของค้าง 2 ใบ</h4>
+      <p><a href="https://redmine.ochi.link/issues/99867">#99867</a> Offset ใหม่ไม่รับช่วงค่า (เลี่ยงเคสนี้ก่อน) · <a href="https://redmine.ochi.link/issues/99492">#99492</a> อีเมลแจ้งเตือนยังไม่ออก (ต้องเปิดหน้าจอดูเอง) · และ 2 เคสยอดเงินซ้ำ/แถวผี ที่ยังไม่เคยทดสอบ</p></div>
+  </div>
+  <p class="note" style="margin-top:24px">
+    ที่มา: Test Checklist SIT (Google Sheet 20220161 Phase 2) ณ 9 ก.ย. 2026 · Redmine <a href="https://redmine.ochi.link/issues/95023">#95023</a> ·
+    Confluence <code>RDSADW</code> &mdash; EDW-RI-SD005 (983269499), EDW-RI-SD007 (989856045), A5 สถานะการพิจารณาข้อมูล (961216654), 02_62_01 Process การนำเข้าและบันทึกข้อมูลลงระบบ EDW (1284571785)
+  </p>
+</section>
+
+</div>
+
+<nav>
+  <button onclick="go(-1)">&larr; ก่อนหน้า</button>
+  <button onclick="go(1)">ถัดไป &rarr;</button>
+  <div id="bar"><div id="fill"></div></div>
+  <span id="title"></span>
+  <span id="count"></span>
+</nav>
+
+<script>
+  var slides = document.querySelectorAll('.slide'), i = 0;
+  function show(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    for (var k = 0; k < slides.length; k++) {
+      if (k === i) { slides[k].classList.add('on'); } else { slides[k].classList.remove('on'); }
+    }
+    document.getElementById('count').textContent = (i + 1) + ' / ' + slides.length;
+    document.getElementById('fill').style.width = ((i + 1) / slides.length * 100) + '%';
+    document.getElementById('title').textContent = slides[i].getAttribute('data-title') || '';
+    slides[i].scrollTop = 0;
+    location.hash = i + 1;
+  }
+  function go(d){ show(i + d); }
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { go(1); e.preventDefault(); }
+    if (e.key === 'ArrowLeft'  || e.key === 'PageUp')  { go(-1); e.preventDefault(); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End')  show(slides.length - 1);
+    if (e.key === 'p' || e.key === 'P') window.print();
+  });
+  show((parseInt(location.hash.replace('#',''), 10) - 1) || 0);
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+# BATCH-LE001_01 insert table tx_cp_rep_tracking_mail_history
+
+- **Page ID:** 1358168076
+- **URL:** http://wiki.thaisamut.co.th/display/RDSCPENH/BATCH-LE001_01+insert+table+tx_cp_rep_tracking_mail_history
+- **Path:** Home > Software Requirements Specification > 04. Batch Process > Batch-LE-จดหมาย > BATCH-LE001 Batch BH048 : Auto สร้างจดหมาย LB04 (จดหมายติดตาม) > BATCH-LE001_01 insert table tx_cp_rep_tracking_mail_history
+- **Depth:** 5
+
+---
+
+| **No.** | **Field** | **Data Source** |
+|---|---|---|
+| 1 | id | Auto Running No. |
+| 2 | tx_cp_rep_id | [tx_cp_rep](/display/RDSCPENH/03_15+tx_cp_rep).id จากขั้นตอน [ดึงข้อมูลการส่งจดหมายติดตาม](#BATCH-LE001_01inserttabletx_cp_rep_tracking_mail_history-A_Select) |
+| 3 | mail_created_date | วันที่สร้างข้อมูล |
+| 4 | mail_round | [tx_cp_rep_tracking_mail_history](/display/RDSCPENH/03_25+tx_cp_rep_tracking_mail_history).mail_round + 1 เงื่อนไข tx_cp_rep_id = [tx_cp_rep_id No.2](#BATCH-LE001_01inserttabletx_cp_rep_tracking_mail_history-tx_cp_rep_id) |
+| 5 | mail_type_code | Fix : "LB04" |
+| 6 | mail_no | เรียกใช้ Process [FS-06-02-07_02_01_01 สร้างเลขที่จดหมาย](/pages/viewpage.action?pageId=1357840719) |
+| 7 | policy_no | [tx_cp_rep](http://wiki.thaisamut.co.th/display/RDSCPENH/03_15+tx_cp_rep).policy_no [ดึงข้อมูลการส่งจดหมายติดตาม](#BATCH-LE001_01inserttabletx_cp_rep_tracking_mail_history-A_Select) |
+| 8 | sent_mail_method | Fix : "จดหมาย" |
+| 9 | sent_mail_status | Fix : "สำเร็จ" |
+| 10 | mail_return_date | Fix : null |
+| 11 | mail_return_reason | Fix : null |
+| 12 | mail_type_print | Fix : "Auto" |
+| 13 | print_by | ผู้สร้างข้อมูล (เก็บ User ที่ใช้ Login เข้าระบบ เช่น Ocean.co) |
+| 14 | print_by_fullname | ผู้สร้างข้อมูล (เก็บ fullname ที่ใช้ Login เข้าระบบ เช่น สมชาย ใจดี) |
+| 15 | created_by | ผู้สร้างข้อมูล (เก็บ User ที่ใช้ Login เข้าระบบ เช่น Ocean.co) |
+| 16 | created_date | วันที่และเวลาสร้างข้อมูล |
+| 17 | barcode_reference_text | ให้สร้าง barcode โดยอ้างอิง Process [รูปแบบการสร้าง Barcode](/pages/viewpage.action?pageId=796524812) และใช้ข้อมูลประกอบดังนี้กรมธรรม์ = [policy_no No. 7](#BATCH-LE001_01inserttabletx_cp_rep_tracking_mail_history-A_policy_no)YYMM = ปีและเดือนที่ทำรายการเลขที่หนังสือ = [mail_no No. 6](#BATCH-LE001_01inserttabletx_cp_rep_tracking_mail_history-A_mail_no)ประเภทใบแจ้ง = ดึงข้อมูลจาก [cf_list_of_value](http://wiki.thaisamut.co.th/display/RDSCP/cf_list_of_value).value โดยเงื่อนไข group = 'LETTER_FORM' และ name = 'LetterCodeSystem' และ active_flag = 'A |
+| 18 | reference_month_year | ให้สร้าง ข้อมูลอ้างอิงเดือน ปี ดังนี้MM-X-YYYYMM = เดือนที่สร้างข้อมูล 2 หลักX = '-'YYYY = ปี พศ ที่สร้างข้อมูล 4 หลักเช่น **01-2569** |
+| 19 | reference_rind | [tx_cp_rep_tracking_mail_history](/display/RDSCPENH/03_25+tx_cp_rep_tracking_mail_history).id 11 digit กรณีที่ไม่ครบ 11 digit ให้นำเลข 0 มาต่อด้านหน้าจนครบ 11 digit |
+| 20 | sent_mail_status_code | Fix : "S" |
+| 21 | mail_type_print_code | Fix : "AUT" |
+| 22 | print_pending_flag | Fix : "Y" |
+| 23 | returned_document_no | [tx_cp_rep_tracking_mail_history](/display/RDSCPENH/03_25+tx_cp_rep_tracking_mail_history).id 6 digit กรณีที่ไม่ครบ 6 digit ให้นำเลข 0 มาต่อด้านหน้าจนครบ 6 digit |
+| 24 | system_soruce | Fix : "Cenpay" |
+| 24 | delivery_method | Fix : "จดหมาย" |
+| 25 | is_print_flag | Fix : "Y" |
+
+---
+
+## Hyperlinks บนหน้านี้
+
+- [tx_cp_rep](http://wiki.thaisamut.co.th/display/RDSCPENH/03_15+tx_cp_rep)
+- [tx_cp_rep_tracking_mail_history](http://wiki.thaisamut.co.th/display/RDSCPENH/03_25+tx_cp_rep_tracking_mail_history)
+- [FS-06-02-07_02_01_01 สร้างเลขที่จดหมาย](http://wiki.thaisamut.co.th/pages/viewpage.action?pageId=1357840719)
+- [tx_cp_rep](http://wiki.thaisamut.co.th/display/RDSCPENH/03_15+tx_cp_rep)
+- [รูปแบบการสร้าง Barcode](http://wiki.thaisamut.co.th/pages/viewpage.action?pageId=796524812)
+- [cf_list_of_value](http://wiki.thaisamut.co.th/display/RDSCP/cf_list_of_value)
+- [tx_cp_rep_tracking_mail_history](http://wiki.thaisamut.co.th/display/RDSCPENH/03_25+tx_cp_rep_tracking_mail_history)
+- [tx_cp_rep_tracking_mail_history](http://wiki.thaisamut.co.th/display/RDSCPENH/03_25+tx_cp_rep_tracking_mail_history)
